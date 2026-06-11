@@ -35,3 +35,6 @@ ios/App/build/
 ios/DerivedData/
 *.xcworkspace/xcuserdata/
 *.xcuserdata/
+
+# Dev artifacts
+dev-dist/
