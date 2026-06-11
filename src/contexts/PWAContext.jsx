@@ -1,5 +1,12 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useState, useEffect, useCallback } from 'react'
+import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react'
+
+function detectPlatform() {
+  const ua = navigator.userAgent.toLowerCase()
+  const android = /android/.test(ua)
+  const ios = /iphone|ipad|ipod/.test(ua) || (navigator.maxTouchPoints > 0 && /mac/.test(ua))
+  return { android, ios }
+}
 
 const PWAContext = createContext()
 
@@ -8,6 +15,9 @@ export function PWAProvider({ children }) {
   const [isInstalled, setIsInstalled] = useState(false)
   const [updateAvailable, setUpdateAvailable] = useState(false)
   const [updateSW, setUpdateSW] = useState(null)
+  const [manualGuide, setManualGuide] = useState(false)
+
+  const platform = useMemo(() => detectPlatform(), [])
 
   useEffect(() => {
     const handler = (e) => {
@@ -48,8 +58,17 @@ export function PWAProvider({ children }) {
     }
   }, [])
 
+  useEffect(() => {
+    if (!platform.android || isInstalled || installPrompt) return
+    const timer = setTimeout(() => setManualGuide(true), 10000)
+    return () => clearTimeout(timer)
+  }, [platform.android, isInstalled, installPrompt])
+
   const handleInstall = useCallback(async () => {
-    if (!installPrompt) return
+    if (!installPrompt) {
+      setManualGuide(true)
+      return
+    }
     installPrompt.prompt()
     const result = await installPrompt.userChoice
     if (result.outcome === 'accepted') {
@@ -66,16 +85,25 @@ export function PWAProvider({ children }) {
     setUpdateAvailable(false)
   }, [])
 
+  const dismissManualGuide = useCallback(() => {
+    setManualGuide(false)
+  }, [])
+
+  const value = useMemo(() => ({
+    installPrompt,
+    isInstalled,
+    updateAvailable,
+    platform,
+    manualGuide,
+    handleInstall,
+    dismissInstall,
+    handleUpdate: updateSW,
+    dismissUpdate,
+    dismissManualGuide
+  }), [installPrompt, isInstalled, updateAvailable, platform, manualGuide, handleInstall, dismissInstall, updateSW, dismissUpdate, dismissManualGuide])
+
   return (
-    <PWAContext.Provider value={{
-      installPrompt,
-      isInstalled,
-      updateAvailable,
-      handleInstall,
-      dismissInstall,
-      handleUpdate: updateSW,
-      dismissUpdate
-    }}>
+    <PWAContext.Provider value={value}>
       {children}
     </PWAContext.Provider>
   )

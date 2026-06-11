@@ -9,8 +9,9 @@ const FILTROS = [
   { key: 'completed', label: 'Completadas' }
 ]
 
-export default function TasksView({ tasks, onAddTask, onToggle, onDeleteTask, toggleSubtask }) {
+export default function TasksView({ tasks, onAddTask, onToggle, onDeleteTask, toggleSubtask, onUpdateTask }) {
   const [showModal, setShowModal] = useState(false)
+  const [editingTask, setEditingTask] = useState(null)
   const [filtro, setFiltro] = useState('all')
   const [busqueda, setBusqueda] = useState('')
   const [fechaExp, setFechaExp] = useState({})
@@ -118,7 +119,7 @@ export default function TasksView({ tasks, onAddTask, onToggle, onDeleteTask, to
                 {isExpanded && (
                   <div className="space-y-2">
                     {tareas.map(t => (
-                      <TaskCard key={t.id} tarea={t} onToggle={onToggle} onDelete={onDeleteTask} toggleSubtask={toggleSubtask} />
+                      <TaskCard key={t.id} tarea={t} onToggle={onToggle} onDelete={onDeleteTask} toggleSubtask={toggleSubtask} onEdit={setEditingTask} />
                     ))}
                   </div>
                 )}
@@ -143,6 +144,13 @@ export default function TasksView({ tasks, onAddTask, onToggle, onDeleteTask, to
       </button>
 
       {showModal && <AddTaskModal onClose={() => setShowModal(false)} onAdd={onAddTask} />}
+      {editingTask && (
+        <AddTaskModal
+          task={editingTask}
+          onClose={() => setEditingTask(null)}
+          onAdd={(data) => { onUpdateTask?.(editingTask.id, data); setEditingTask(null) }}
+        />
+      )}
     </div>
   )
 }

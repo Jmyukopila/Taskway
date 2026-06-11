@@ -5,14 +5,15 @@ import Modal from './ui/Modal'
 const DIAS = DIAS_SEMANA
 const COLORES = COLORES_CLASE
 
-export default function AddClassModal({ onClose, onAdd }) {
-  const [materia, setMateria] = useState('')
-  const [profesor, setProfesor] = useState('')
-  const [salon, setSalon] = useState('')
-  const [horaInicio, setHoraInicio] = useState('07:00')
-  const [horaFin, setHoraFin] = useState('08:00')
-  const [color, setColor] = useState(COLORES[0])
-  const [diasSemana, setDiasSemana] = useState([])
+export default function AddClassModal({ onClose, onAdd, clase }) {
+  const esEdicion = !!clase
+  const [materia, setMateria] = useState(clase?.materia || '')
+  const [profesor, setProfesor] = useState(clase?.profesor || '')
+  const [salon, setSalon] = useState(clase?.salon || '')
+  const [horaInicio, setHoraInicio] = useState(clase?.horaInicio || '07:00')
+  const [horaFin, setHoraFin] = useState(clase?.horaFin || '08:00')
+  const [color, setColor] = useState(clase?.color || COLORES[0])
+  const [diasSemana, setDiasSemana] = useState(clase?.diasSemana || [])
 
   const toggleDia = (dia) => {
     setDiasSemana(prev => prev.includes(dia) ? prev.filter(d => d !== dia) : [...prev, dia])
@@ -32,7 +33,7 @@ export default function AddClassModal({ onClose, onAdd }) {
   }
 
   return (
-    <Modal open={true} onClose={onClose} titulo="Nueva clase">
+    <Modal open={true} onClose={onClose} titulo={esEdicion ? 'Editar clase' : 'Nueva clase'}>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block text-xs font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>Materia</label>
@@ -53,7 +54,7 @@ export default function AddClassModal({ onClose, onAdd }) {
             />
           </div>
           <div className="flex-1">
-            <label className="block text-xs font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>Salón</label>
+            <label className="block text-xs font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>Salon</label>
             <input type="text" value={salon} onChange={e => setSalon(e.target.value)}
               placeholder="Aula"
               className="w-full rounded-lg px-3 py-2.5 text-sm"
@@ -80,7 +81,7 @@ export default function AddClassModal({ onClose, onAdd }) {
         </div>
 
         <div>
-          <label className="block text-xs font-medium mb-2" style={{ color: 'var(--color-text-secondary)' }}>Días</label>
+          <label className="block text-xs font-medium mb-2" style={{ color: 'var(--color-text-secondary)' }}>Dias</label>
           <div className="flex gap-1.5">
             {DIAS.map(dia => (
               <button key={dia} type="button" onClick={() => toggleDia(dia)}
@@ -110,7 +111,7 @@ export default function AddClassModal({ onClose, onAdd }) {
         <button type="submit" disabled={!materia.trim() || diasSemana.length === 0}
           className="w-full text-white font-medium py-2.5 rounded-lg transition-all text-sm disabled:opacity-40"
           style={{ backgroundColor: 'var(--color-teal)' }}>
-          Crear clase
+          {esEdicion ? 'Guardar cambios' : 'Crear clase'}
         </button>
       </form>
     </Modal>

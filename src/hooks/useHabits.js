@@ -39,5 +39,9 @@ export default function useHabits() {
     setHabits(prev => prev.filter(h => h.id !== id))
   }, [])
 
-  return { habits, addHabit, toggleHabit, deleteHabit }
+  const updateHabit = useCallback((id, cambios) => {
+    setHabits(prev => prev.map(h => h.id === id ? { ...h, ...cambios } : h))
+  }, [])
+
+  return { habits, addHabit, toggleHabit, deleteHabit, updateHabit }
 }

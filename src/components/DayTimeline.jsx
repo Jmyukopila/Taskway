@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react'
 import TaskCard from './TaskCard'
 import { ahora } from '../lib/dates'
 
-export default function DayTimeline({ tareas, clases, onToggle, onDeleteTask, toggleSubtask }) {
+export default function DayTimeline({ tareas, clases, onToggle, onDeleteTask, toggleSubtask, onEditTask }) {
   const tareasConHora = useMemo(() =>
     tareas.filter(t => t.hora && !t.completada).sort((a, b) => a.hora.localeCompare(b.hora)),
     [tareas]
@@ -75,7 +75,7 @@ export default function DayTimeline({ tareas, clases, onToggle, onDeleteTask, to
                 <span className="text-[11px] font-mono mb-1 block" style={{ color: pasada ? 'var(--color-muted)' : 'var(--color-teal)' }}>
                   {tarea.hora}
                 </span>
-                <TaskCard tarea={tarea} onToggle={onToggle} onDelete={onDeleteTask} toggleSubtask={toggleSubtask} />
+                <TaskCard tarea={tarea} onToggle={onToggle} onDelete={onDeleteTask} toggleSubtask={toggleSubtask} onEdit={onEditTask} />
               </div>
             )
           })}
@@ -98,7 +98,7 @@ export default function DayTimeline({ tareas, clases, onToggle, onDeleteTask, to
             <div className="space-y-2">
               {tareasSinHora.map((tarea, idx) => (
                 <div key={tarea.id} className="animate-fade-in-up" style={{ animationDelay: `${idx * 50}ms` }}>
-                  <TaskCard tarea={tarea} onToggle={onToggle} onDelete={onDeleteTask} toggleSubtask={toggleSubtask} />
+                  <TaskCard tarea={tarea} onToggle={onToggle} onDelete={onDeleteTask} toggleSubtask={toggleSubtask} onEdit={onEditTask} />
                 </div>
               ))}
             </div>

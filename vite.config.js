@@ -9,6 +9,9 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
+      strategies: 'injectManifest',
+      srcDir: 'public',
+      filename: 'sw.js',
       includeAssets: ['favicon.svg', 'offline.html'],
       manifest: {
         name: 'Taskway',
@@ -17,9 +20,13 @@ export default defineConfig({
         theme_color: '#0f0f0f',
         background_color: '#0f0f0f',
         display: 'standalone',
+        display_override: ['standalone', 'minimal-ui'],
         orientation: 'portrait',
         start_url: '/',
         scope: '/',
+        categories: ['productivity', 'lifestyle'],
+        prefer_related_applications: false,
+        launch_handler: { client_mode: 'focus-existing' },
         icons: [
           { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
           { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
@@ -28,29 +35,12 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
-        runtimeCaching: [
-          {
-            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'google-fonts-stylesheets',
-              expiration: { maxEntries: 4, maxAgeSeconds: 365 * 24 * 60 * 60 }
-            }
-          },
-          {
-            urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'google-fonts-webfonts',
-              expiration: { maxEntries: 8, maxAgeSeconds: 365 * 24 * 60 * 60 }
-            }
-          }
-        ],
         navigateFallback: '/offline.html',
         navigateFallbackDenylist: [/\/api\//]
       },
       devOptions: {
-        enabled: true
+        enabled: true,
+        type: 'module'
       }
     })
   ]

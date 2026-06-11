@@ -25,7 +25,7 @@ const FAMILIA_ICONS = {
 
 const PREVIEW_ICONS = [HoyIcon, CalendarioIcon, HabitosIcon, HorarioIcon, TareasIcon]
 
-export default function SettingsView({ onClose }) {
+export default function SettingsView({ onClose, alarmEnabled, setAlarmEnabled }) {
   const { theme, setTema, setFamilia, setVariante, toggleModo, temasDisponibles, familias } = useTheme()
   const fileRef = useRef(null)
   const [importStatus, setImportStatus] = useState(null)
@@ -207,6 +207,34 @@ export default function SettingsView({ onClose }) {
                   <div
                     className="absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all"
                     style={{ left: theme.modo === 'dark' ? '22px' : '2px' }}
+                  />
+                </div>
+              </button>
+
+              <button
+                onClick={() => setAlarmEnabled(!alarmEnabled)}
+                className="w-full flex items-center justify-between px-4 py-3 rounded-xl border transition-colors"
+                style={{
+                  backgroundColor: 'var(--color-fondo)',
+                  borderColor: 'var(--color-border)',
+                  color: 'var(--color-text)'
+                }}
+              >
+                <div className="flex items-center gap-3">
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M15 17a5 5 0 001-5 5 5 0 00-10 0 5 5 0 001 5" />
+                    <path d="M11 21h2" />
+                    <path d="M20 11a8 8 0 10-16 0" />
+                  </svg>
+                  <span className="text-sm">Alarma sonora en notificaciones</span>
+                </div>
+                <div
+                  className="w-10 h-5 rounded-full relative transition-colors"
+                  style={{ backgroundColor: alarmEnabled ? 'var(--color-teal)' : 'var(--color-border)' }}
+                >
+                  <div
+                    className="absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all"
+                    style={{ left: alarmEnabled ? '22px' : '2px' }}
                   />
                 </div>
               </button>

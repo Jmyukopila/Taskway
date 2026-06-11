@@ -7,7 +7,7 @@ export default function BottomNav({ activeTab, onTabChange }) {
       style={{
         backgroundColor: 'var(--color-card)',
         borderColor: 'var(--color-border)',
-        paddingBottom: 'env(safe-area-inset-bottom, 0px)'
+        paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 4px)'
       }}
     >
       <div className="flex max-w-[480px] mx-auto">
@@ -18,7 +18,7 @@ export default function BottomNav({ activeTab, onTabChange }) {
             <button
               key={tab.key}
               onClick={() => onTabChange(tab.key)}
-              className="flex-1 flex flex-col items-center gap-0.5 py-2.5 transition-all duration-200 relative"
+              className="flex-1 flex flex-col items-center gap-0.5 py-3 transition-all duration-200 active:scale-95 relative"
               style={{ color: isActive ? 'var(--color-teal)' : 'var(--color-muted)' }}
             >
               {isActive && (
@@ -27,8 +27,8 @@ export default function BottomNav({ activeTab, onTabChange }) {
                   style={{ backgroundColor: 'var(--color-teal)' }}
                 />
               )}
-              <Icon className="w-5 h-5" />
-              <span className="text-[10px] font-medium">{tab.label}</span>
+              <Icon className="w-6 h-6" />
+              <span className="text-xs font-medium">{tab.label}</span>
             </button>
           )
         })}

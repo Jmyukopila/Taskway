@@ -3,12 +3,14 @@ import { useState, useMemo, useCallback } from 'react'
 import useTasks from './hooks/useTasks'
 import useClasses from './hooks/useClasses'
 import useHabits from './hooks/useHabits'
+import useEvents from './hooks/useEvents'
 import BottomNav from './components/BottomNav'
 import TodayView from './views/TodayView'
 import CalendarView from './views/CalendarView'
 import HabitsView from './views/HabitsView'
 import ScheduleView from './views/ScheduleView'
 import TasksView from './views/TasksView'
+import DashboardView from './views/DashboardView'
 import PomodoroTimer from './components/PomodoroTimer'
 import { GearIcon } from './config/icons'
 import SettingsView from './views/SettingsView'
@@ -20,9 +22,10 @@ export default function App() {
   const [pomodoroOpen, setPomodoroOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
 
-  const { tasks, addTask, toggleTask, deleteTask, toggleSubtask } = useTasks()
-  const { classes, addClass, deleteClass } = useClasses()
-  const { habits, addHabit, toggleHabit, deleteHabit } = useHabits()
+  const { tasks, addTask, toggleTask, deleteTask, toggleSubtask, updateTask, alarmEnabled, setAlarmEnabled } = useTasks()
+  const { classes, addClass, deleteClass, updateClass } = useClasses()
+  const { habits, addHabit, toggleHabit, deleteHabit, updateHabit } = useHabits()
+  const { events, addEvent, deleteEvent } = useEvents()
 
   const handleToggleTask = useCallback((id) => toggleTask(id), [toggleTask])
 
@@ -39,15 +42,17 @@ export default function App() {
   const renderVista = () => {
     switch (vista) {
       case 'today':
-        return <TodayView tasks={tasks} classes={classes} onToggle={handleToggleTask} onDeleteTask={deleteTask} toggleSubtask={toggleSubtask} onOpenPomodoro={() => setPomodoroOpen(true)} />
+        return <TodayView tasks={tasks} classes={classes} onToggle={handleToggleTask} onDeleteTask={deleteTask} toggleSubtask={toggleSubtask} onOpenPomodoro={() => setPomodoroOpen(true)} onUpdateTask={updateTask} />
       case 'calendar':
-        return <CalendarView tasks={tasks} classes={classes} onToggle={handleToggleTask} />
+        return <CalendarView tasks={tasks} classes={classes} events={events} onToggle={handleToggleTask} onAddEvent={addEvent} onDeleteEvent={deleteEvent} />
       case 'habits':
-        return <HabitsView habits={habits} onAdd={addHabit} onToggle={toggleHabit} onDelete={deleteHabit} />
+        return <HabitsView habits={habits} onAdd={addHabit} onToggle={toggleHabit} onDelete={deleteHabit} onUpdateHabit={updateHabit} />
       case 'schedule':
-        return <ScheduleView classes={classes} onAddClass={addClass} onDeleteClass={deleteClass} />
+        return <ScheduleView classes={classes} onAddClass={addClass} onDeleteClass={deleteClass} onUpdateClass={updateClass} />
+      case 'dashboard':
+        return <DashboardView tasks={tasks} habits={habits} />
       case 'tasks':
-        return <TasksView tasks={tasks} onAddTask={addTask} onToggle={handleToggleTask} onDeleteTask={deleteTask} toggleSubtask={toggleSubtask} />
+        return <TasksView tasks={tasks} onAddTask={addTask} onToggle={handleToggleTask} onDeleteTask={deleteTask} toggleSubtask={toggleSubtask} onUpdateTask={updateTask} />
       default:
         return null
     }
@@ -112,7 +117,7 @@ export default function App() {
 
       {/* Settings View */}
       {settingsOpen && (
-        <SettingsView onClose={() => setSettingsOpen(false)} />
+        <SettingsView onClose={() => setSettingsOpen(false)} alarmEnabled={alarmEnabled} setAlarmEnabled={setAlarmEnabled} />
       )}
     </div>
   )

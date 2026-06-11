@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef } from 'react'
 import { hoy } from '../lib/dates'
 import Modal from '../components/ui/Modal'
 import { HABIT_ICONS, HabitPresetIcon, EmptyIcon, StreakIcon } from '../config/icons'
@@ -28,11 +28,14 @@ function calcularStreak(completions) {
   return streak
 }
 
-export default function HabitsView({ habits, onAdd, onToggle, onDelete }) {
+export default function HabitsView({ habits, onAdd, onToggle, onDelete, onUpdateHabit }) {
   const [showAdd, setShowAdd] = useState(false)
+  const [editingHabit, setEditingHabit] = useState(null)
   const [nombre, setNombre] = useState('')
   const [color, setColor] = useState('#1D9E75')
   const [iconKey, setIconKey] = useState('corazon')
+  const [menuHabitId, setMenuHabitId] = useState(null)
+  const lastTap = useRef({ id: null, time: 0 })
 
   const today = hoy()
 
@@ -47,7 +50,26 @@ export default function HabitsView({ habits, onAdd, onToggle, onDelete }) {
     if (!nombre.trim()) return
     onAdd({ nombre: nombre.trim(), color, emoji: iconKey })
     setNombre('')
+    setIconKey('corazon')
+    setColor('#1D9E75')
     setShowAdd(false)
+  }
+
+  const handleSaveEdit = () => {
+    if (!nombre.trim() || !editingHabit) return
+    onUpdateHabit?.(editingHabit.id, { nombre: nombre.trim(), color, emoji: iconKey })
+    setEditingHabit(null)
+    setNombre('')
+    setIconKey('corazon')
+    setColor('#1D9E75')
+  }
+
+  const openEdit = (h) => {
+    setEditingHabit(h)
+    setNombre(h.nombre)
+    setColor(h.color)
+    setIconKey(h.emoji || 'corazon')
+    setMenuHabitId(null)
   }
 
   return (
@@ -93,9 +115,17 @@ export default function HabitsView({ habits, onAdd, onToggle, onDelete }) {
                 borderColor: completadoHoy ? `${h.color}40` : 'var(--color-border)'
               }}
             >
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3" onClick={() => {
+                const now = Date.now()
+                if (lastTap.current.id === h.id && now - lastTap.current.time < 300) {
+                  setMenuHabitId(menuHabitId === h.id ? null : h.id)
+                  lastTap.current = { id: null, time: 0 }
+                } else {
+                  lastTap.current = { id: h.id, time: now }
+                }
+              }}>
                 <button
-                  onClick={() => onToggle(h.id)}
+                  onClick={(e) => { e.stopPropagation(); onToggle(h.id) }}
                   className="w-10 h-10 rounded-xl flex items-center justify-center transition-all active:scale-90"
                   style={{
                     backgroundColor: completadoHoy ? h.color : 'var(--color-fondo)',
@@ -114,15 +144,33 @@ export default function HabitsView({ habits, onAdd, onToggle, onDelete }) {
                   </div>
                 </div>
 
-                <button
-                  onClick={() => { if (window.confirm(`Eliminar "${h.nombre}"?`)) onDelete(h.id) }}
-                  className="p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:opacity-100"
-                  style={{ color: 'var(--color-muted)' }}
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
+                {menuHabitId === h.id && (
+                  <div className="relative" onClick={e => e.stopPropagation()}>
+                    <div className="fixed inset-0 z-40" onClick={() => setMenuHabitId(null)} />
+                    <div className="relative z-50 flex gap-2 p-1.5 rounded-lg border"
+                      style={{ backgroundColor: 'var(--color-fondo)', borderColor: 'var(--color-border)' }}>
+                      <button
+                        onClick={() => openEdit(h)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all active:scale-95"
+                        style={{ color: 'var(--color-teal)', backgroundColor: 'color-mix(in srgb, var(--color-teal) 10%, transparent)' }}
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M17 3a2.828 2.828 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+                        </svg>
+                        Editar
+                      </button>
+                      <button
+                        onClick={() => { onDelete(h.id); setMenuHabitId(null) }}
+                        className="flex items-center gap-1.5 px-1.5 py-1.5 rounded-lg text-xs font-medium transition-all active:scale-95"
+                        style={{ color: 'var(--color-danger)', backgroundColor: 'color-mix(in srgb, var(--color-danger) 10%, transparent)' }}
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )
@@ -159,7 +207,7 @@ export default function HabitsView({ habits, onAdd, onToggle, onDelete }) {
 
       {/* FAB */}
       <button
-        onClick={() => setShowAdd(true)}
+        onClick={() => { setShowAdd(true); setNombre(''); setIconKey('corazon'); setColor('#1D9E75') }}
         className="fixed bottom-20 right-4 w-14 h-14 rounded-2xl flex items-center justify-center transition-all active:scale-90 shadow-xl z-30"
         style={{
           backgroundColor: 'var(--color-teal)',
@@ -236,6 +284,75 @@ export default function HabitsView({ habits, onAdd, onToggle, onDelete }) {
             style={{ backgroundColor: 'var(--color-teal)' }}
           >
             Crear habito
+          </button>
+        </div>
+      </Modal>
+
+      {/* Modal edit */}
+      <Modal open={!!editingHabit} onClose={() => { setEditingHabit(null); setNombre(''); setIconKey('corazon'); setColor('#1D9E75') }} titulo="Editar habito">
+        <div className="space-y-4">
+          <div>
+            <label className="block text-xs font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>Nombre</label>
+            <input
+              type="text"
+              value={nombre}
+              onChange={e => setNombre(e.target.value)}
+              placeholder="Ej: Leer 30 min"
+              className="w-full rounded-lg px-3 py-2.5 text-sm border"
+              style={{
+                backgroundColor: 'var(--color-fondo)',
+                borderColor: 'var(--color-border)',
+                color: 'var(--color-text)'
+              }}
+              autoFocus
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>Icono</label>
+            <div className="flex flex-wrap gap-2">
+              {HABIT_ICONS.map(ic => {
+                const activo = iconKey === ic.key
+                return (
+                  <button
+                    key={ic.key}
+                    onClick={() => setIconKey(ic.key)}
+                    className="w-10 h-10 rounded-lg flex items-center justify-center transition-all"
+                    style={{
+                      backgroundColor: activo ? 'var(--color-teal)' : 'var(--color-fondo)',
+                      border: `1px solid ${activo ? 'var(--color-teal)' : 'var(--color-border)'}`
+                    }}
+                    title={ic.label}
+                  >
+                    <HabitPresetIcon iconKey={ic.key} className="w-5 h-5" style={{ color: activo ? '#fff' : 'var(--color-text-secondary)' }} />
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>Color</label>
+            <div className="flex gap-2">
+              {['#1D9E75', '#7F77DD', '#E84855', '#F59E0B', '#3B82F6', '#EC4899', '#14B8A6', '#8B5CF6'].map(c => (
+                <button
+                  key={c}
+                  onClick={() => setColor(c)}
+                  className="w-8 h-8 rounded-full transition-all"
+                  style={{
+                    backgroundColor: c,
+                    outline: color === c ? `2px solid ${c}` : 'none',
+                    outlineOffset: '3px'
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+          <button
+            onClick={handleSaveEdit}
+            disabled={!nombre.trim()}
+            className="w-full text-white font-medium py-2.5 rounded-lg transition-all text-sm disabled:opacity-40"
+            style={{ backgroundColor: 'var(--color-teal)' }}
+          >
+            Guardar cambios
           </button>
         </div>
       </Modal>

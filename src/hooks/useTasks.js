@@ -3,8 +3,37 @@ import { STORAGE_KEYS } from '../config/constants'
 import { loadJSON, saveJSON } from '../lib/storage'
 import { uid } from '../lib/id'
 import { generarProximaFechaRecurrente, hoy } from '../lib/dates'
+import { pedirPermiso, enviarNotificacion, enviarNotificacionDesdeSW, suscribirPush, playAlarm } from '../utils/pushNotifications'
 
+const PENDING_KEY = 'taskway-pending-notifs'
 const notifTimeouts = new Map()
+
+function guardarPendiente(tarea, timestamp) {
+  const pendientes = loadJSON(PENDING_KEY, [])
+  pendientes.push({ id: tarea.id, title: tarea.titulo, time: tarea.hora, fecha: tarea.fecha, timestamp })
+  saveJSON(PENDING_KEY, pendientes)
+}
+
+function limpiarPendiente(id) {
+  const pendientes = loadJSON(PENDING_KEY, []).filter(p => p.id !== id)
+  saveJSON(PENDING_KEY, pendientes)
+}
+
+function recuperarPendientes() {
+  const pendientes = loadJSON(PENDING_KEY, [])
+  if (pendientes.length === 0) return
+  const ahora = Date.now()
+  const vencidas = pendientes.filter(p => p.timestamp <= ahora)
+  if (vencidas.length === 0) return
+  vencidas.forEach(p => {
+    enviarNotificacion('Taskway', `"${p.title}" — tarea pendiente de hace rato`, p.id)
+    playAlarm()
+    limpiarPendiente(p.id)
+  })
+  // guardar las que aún no vencen
+  const futuras = pendientes.filter(p => p.timestamp > ahora)
+  saveJSON(PENDING_KEY, futuras)
+}
 
 function programarNotif(tarea) {
   cancelarNotif(tarea.id)
@@ -17,12 +46,16 @@ function programarNotif(tarea) {
   const diff = diezAntes - Date.now()
   if (diff <= 0) return
 
+  guardarPendiente(tarea, diezAntes)
+
   const id = setTimeout(() => {
-    new Notification('Mi Día', {
-      body: `📌 "${tarea.titulo}" comienza en 10 minutos`,
-      tag: tarea.id
-    })
+    enviarNotificacionDesdeSW({ title: 'Taskway', body: `"${tarea.titulo}" comienza en 10 minutos`, tag: tarea.id })
+      .catch(() => {
+        enviarNotificacion('Taskway', `"${tarea.titulo}" comienza en 10 minutos`, tarea.id)
+        playAlarm()
+      })
     notifTimeouts.delete(tarea.id)
+    limpiarPendiente(tarea.id)
   }, diff)
   notifTimeouts.set(tarea.id, id)
 }
@@ -32,16 +65,42 @@ function cancelarNotif(id) {
     clearTimeout(notifTimeouts.get(id))
     notifTimeouts.delete(id)
   }
+  limpiarPendiente(id)
 }
 
 export default function useTasks() {
   const [tasks, setTasks] = useState(() => loadJSON(STORAGE_KEYS.TASKS, []))
+  const [alarmEnabled, setAlarmEnabled] = useState(() => {
+    const stored = localStorage.getItem(STORAGE_KEYS.ALARM_ENABLED)
+    return stored !== null ? stored === 'true' : true
+  })
 
   useEffect(() => { saveJSON(STORAGE_KEYS.TASKS, tasks) }, [tasks])
+  useEffect(() => { localStorage.setItem(STORAGE_KEYS.ALARM_ENABLED, alarmEnabled) }, [alarmEnabled])
 
   useEffect(() => {
-    if ('Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission()
+    pedirPermiso().then(granted => {
+      if (granted) {
+        suscribirPush()
+        recuperarPendientes()
+      }
+    })
+
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        recuperarPendientes()
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibility)
+
+    const handleSWMessage = (event) => {
+      if (event.data?.type === 'play-alarm') playAlarm()
+    }
+    navigator.serviceWorker.addEventListener('message', handleSWMessage)
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibility)
+      navigator.serviceWorker.removeEventListener('message', handleSWMessage)
     }
   }, [])
 
@@ -73,11 +132,11 @@ export default function useTasks() {
     setTasks(prev =>
       prev.map(t => {
         if (t.id !== id) return t
-        if (t.completada) return { ...t, completada: false }
+        if (t.completada) return { ...t, completada: false, completadaEn: null }
 
-        const updated = { ...t, completada: true }
+        const today = hoy()
+        const updated = { ...t, completada: true, completadaEn: today }
 
-        // Si es recurrente, generar siguiente instancia
         if (t.recurrencia) {
           const proxFecha = generarProximaFechaRecurrente(t.fecha, t.recurrencia)
           if (proxFecha && proxFecha !== t.fecha) {
@@ -87,6 +146,7 @@ export default function useTasks() {
               titulo: t.titulo,
               descripcion: t.descripcion,
               completada: false,
+              completadaEn: null,
               fecha: proxFecha,
               hora: t.hora,
               prioridad: t.prioridad,
@@ -122,5 +182,5 @@ export default function useTasks() {
     }))
   }, [])
 
-  return { tasks, addTask, toggleTask, deleteTask, updateTask, toggleSubtask }
+  return { tasks, addTask, toggleTask, deleteTask, updateTask, toggleSubtask, alarmEnabled, setAlarmEnabled }
 }

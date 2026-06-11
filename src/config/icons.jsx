@@ -205,6 +205,46 @@ const F = {
     }
   },
 
+  /* ———— DASHBOARD (line chart) ———— */
+  dashboard: {
+    clasico: {
+      outline: 'M4 18h16M6 16l4-8 4 5 4-9',
+      filled: 'M6 16l4-8 4 5 4-9v11H6z'
+    },
+    flora: {
+      outline: 'M5 17h14M7 15l3-6 4 4 4-7',
+      filled: 'M7 15l3-6 4 4 4-7v10H7z'
+    },
+    acero: {
+      outline: 'M3 19h18M5 17l5-9 4 6 5-11',
+      filled: 'M5 17l5-9 4 6 5-11v13H5z'
+    },
+    'flora.rosas': {
+      outline: 'M4 18h16M6 16l4-8 4 5 4-9',
+      filled: 'M6 16l4-8 4 5 4-9v11H6z'
+    },
+    'flora.corazones': {
+      outline: 'M5 17h14M7 15l3-6 4 4 4-7',
+      filled: 'M7 15l3-6 4 4 4-7v10H7z'
+    },
+    'flora.kawaii': {
+      outline: 'M4 18h16M6 15l4-7 4 4 4-8',
+      filled: 'M6 15l4-7 4 4 4-8v11H6z'
+    },
+    'acero.guerra': {
+      outline: 'M3 19h18M5 17l5-9 4 6 5-11',
+      filled: 'M5 17l5-9 4 6 5-11v13H5z'
+    },
+    'acero.deporte': {
+      outline: 'M4 18h16M6 16l4-8 4 5 4-9',
+      filled: 'M6 16l4-8 4 5 4-9v11H6z'
+    },
+    'acero.tech': {
+      outline: 'M4 18h16M6 15l4-6 4 3 4-7',
+      filled: 'M6 15l4-6 4 3 4-7v12H6z'
+    }
+  },
+
   /* ———— UTILITY ICONS ———— */
   recurring: {
     clasico: 'M12 4V1L8 5l4 4V6a6 6 0 11-6 6H4a8 8 0 108-8z',
@@ -409,6 +449,8 @@ export const HorarioIcon = makeIcon('horario', 'outline')
 export const HorarioIconActive = makeIcon('horario', 'filled')
 export const TareasIcon = makeIcon('tareas', 'outline')
 export const TareasIconActive = makeIcon('tareas', 'filled')
+export const DashboardIcon = makeIcon('dashboard', 'outline')
+export const DashboardIconActive = makeIcon('dashboard', 'filled')
 
 /* ==================== UTILITY ICONS ==================== */
 function makeUtility(name) {

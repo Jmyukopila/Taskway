@@ -9,7 +9,7 @@ function getSaludo() {
   return 'Buenas noches'
 }
 
-export default function TodayView({ tasks, classes, onToggle, onDeleteTask, toggleSubtask }) {
+export default function TodayView({ tasks, classes, onToggle, onDeleteTask, toggleSubtask, onUpdateTask }) {
   const hoyStr = hoy()
   const dayName = diaSemana(hoyStr)
 
@@ -54,6 +54,7 @@ export default function TodayView({ tasks, classes, onToggle, onDeleteTask, togg
         onToggle={onToggle}
         onDeleteTask={onDeleteTask}
         toggleSubtask={toggleSubtask}
+        onEditTask={onUpdateTask}
       />
 
       {/* Completadas hoy */}

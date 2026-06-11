@@ -5,18 +5,19 @@ import { uid } from '../lib/id'
 
 const DIAS = diasSemana()
 
-export default function AddTaskModal({ onClose, onAdd }) {
-  const [titulo, setTitulo] = useState('')
-  const [descripcion, setDescripcion] = useState('')
-  const [fecha, setFecha] = useState(hoy())
-  const [hora, setHora] = useState('')
-  const [prioridad, setPrioridad] = useState('media')
-  const [showHora, setShowHora] = useState(false)
-  const [showRecurrencia, setShowRecurrencia] = useState(false)
-  const [recurTipo, setRecurTipo] = useState('diaria')
-  const [recurDias, setRecurDias] = useState([])
+export default function AddTaskModal({ onClose, onAdd, task }) {
+  const esEdicion = !!task
+  const [titulo, setTitulo] = useState(task?.titulo || '')
+  const [descripcion, setDescripcion] = useState(task?.descripcion || '')
+  const [fecha, setFecha] = useState(task?.fecha || hoy())
+  const [hora, setHora] = useState(task?.hora || '')
+  const [prioridad, setPrioridad] = useState(task?.prioridad || 'media')
+  const [showHora, setShowHora] = useState(!!task?.hora)
+  const [showRecurrencia, setShowRecurrencia] = useState(!!task?.recurrencia)
+  const [recurTipo, setRecurTipo] = useState(task?.recurrencia?.tipo || 'diaria')
+  const [recurDias, setRecurDias] = useState(task?.recurrencia?.diasSemana || [])
   const [subtaskInput, setSubtaskInput] = useState('')
-  const [subtasks, setSubtasks] = useState([])
+  const [subtasks, setSubtasks] = useState(task?.subtasks || [])
 
   const toggleRecurDia = (dia) => {
     setRecurDias(prev => prev.includes(dia) ? prev.filter(d => d !== dia) : [...prev, dia])
@@ -55,12 +56,12 @@ export default function AddTaskModal({ onClose, onAdd }) {
   }
 
   return (
-    <Modal open={true} onClose={onClose} titulo="Nueva tarea">
+    <Modal open={true} onClose={onClose} titulo={esEdicion ? 'Editar tarea' : 'Nueva tarea'}>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-xs font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>Título</label>
+          <label className="block text-xs font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>Titulo</label>
           <input type="text" value={titulo} onChange={e => setTitulo(e.target.value)}
-            placeholder="¿Qué tienes que hacer?"
+            placeholder="Que tienes que hacer?"
             className="w-full rounded-lg px-3 py-2.5 text-sm"
             style={{ backgroundColor: 'var(--color-fondo)', borderColor: 'var(--color-border)', color: 'var(--color-text)' }}
             autoFocus
@@ -68,7 +69,7 @@ export default function AddTaskModal({ onClose, onAdd }) {
         </div>
 
         <div>
-          <label className="block text-xs font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>Descripción</label>
+          <label className="block text-xs font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>Descripcion</label>
           <textarea value={descripcion} onChange={e => setDescripcion(e.target.value)}
             placeholder="Detalles adicionales..." rows={2}
             className="w-full rounded-lg px-3 py-2.5 text-sm resize-none"
@@ -116,7 +117,7 @@ export default function AddTaskModal({ onClose, onAdd }) {
           {subtasks.map(s => (
             <div key={s.id} className="flex items-center gap-2 py-1">
               <span className="text-xs flex-1" style={{ color: 'var(--color-text)' }}>{s.titulo}</span>
-              <button type="button" onClick={() => removeSubtask(s.id)} className="text-xs" style={{ color: 'var(--color-muted)' }}>×</button>
+              <button type="button" onClick={() => removeSubtask(s.id)} className="text-xs" style={{ color: 'var(--color-muted)' }}>x</button>
             </div>
           ))}
         </div>
@@ -186,7 +187,7 @@ export default function AddTaskModal({ onClose, onAdd }) {
         <button type="submit" disabled={!titulo.trim()}
           className="w-full text-white font-medium py-2.5 rounded-lg transition-all text-sm disabled:opacity-40"
           style={{ backgroundColor: 'var(--color-teal)' }}>
-          Crear tarea
+          {esEdicion ? 'Guardar cambios' : 'Crear tarea'}
         </button>
       </form>
     </Modal>

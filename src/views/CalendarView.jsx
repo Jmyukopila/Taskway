@@ -1,13 +1,16 @@
 import { useState, useMemo } from 'react'
 import { mesNombre, diasEnMes, primerDiaMes, hoy, esHoy, formatFecha } from '../lib/dates'
+import AddEventModal from '../components/AddEventModal'
 
 const DIAS_LABEL = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
 
-export default function CalendarView({ tasks, classes, onToggle }) {
+export default function CalendarView({ tasks, classes, events, onToggle, onAddEvent, onDeleteEvent }) {
   const now = new Date()
   const [year, setYear] = useState(now.getFullYear())
   const [month, setMonth] = useState(now.getMonth())
   const [diaSeleccionado, setDiaSeleccionado] = useState(null)
+  const [showEventModal, setShowEventModal] = useState(false)
+  const [eventDate, setEventDate] = useState(null)
 
   const tasksByDate = useMemo(() => {
     const map = {}
@@ -17,6 +20,15 @@ export default function CalendarView({ tasks, classes, onToggle }) {
     })
     return map
   }, [tasks])
+
+  const eventsByDate = useMemo(() => {
+    const map = {}
+    events.forEach(ev => {
+      if (!map[ev.fecha]) map[ev.fecha] = []
+      map[ev.fecha].push(ev)
+    })
+    return map
+  }, [events])
 
   const dias = useMemo(() => {
     const total = diasEnMes(year, month)
@@ -35,6 +47,11 @@ export default function CalendarView({ tasks, classes, onToggle }) {
     return tasksByDate[diaSeleccionado] || []
   }, [diaSeleccionado, tasksByDate])
 
+  const eventosDelDia = useMemo(() => {
+    if (!diaSeleccionado) return []
+    return eventsByDate[diaSeleccionado] || []
+  }, [diaSeleccionado, eventsByDate])
+
   const hoyStr = hoy()
 
   const prevMonth = () => {
@@ -47,6 +64,15 @@ export default function CalendarView({ tasks, classes, onToggle }) {
     if (month === 11) { setYear(y => y + 1); setMonth(0) }
     else setMonth(m => m + 1)
     setDiaSeleccionado(null)
+  }
+
+  const handleDayClick = (dateStr) => {
+    if (diaSeleccionado === dateStr) {
+      setEventDate(dateStr)
+      setShowEventModal(true)
+    } else {
+      setDiaSeleccionado(dateStr)
+    }
   }
 
   const getClasesDelDia = (dateStr) => {
@@ -90,6 +116,7 @@ export default function CalendarView({ tasks, classes, onToggle }) {
           if (!dateStr) return <div key={`empty-${i}`} />
           const num = dateStr.split('-')[2]
           const tasksCount = (tasksByDate[dateStr] || []).length
+          const evCount = (eventsByDate[dateStr] || []).length
           const classesHoy = getClasesDelDia(dateStr)
           const classesCount = classesHoy.length
           const selected = diaSeleccionado === dateStr
@@ -98,7 +125,7 @@ export default function CalendarView({ tasks, classes, onToggle }) {
           return (
             <button
               key={dateStr}
-              onClick={() => setDiaSeleccionado(dateStr)}
+              onClick={() => handleDayClick(dateStr)}
               className="relative aspect-square rounded-xl flex flex-col items-center justify-center text-sm transition-all"
               style={{
                 backgroundColor: selected
@@ -110,10 +137,11 @@ export default function CalendarView({ tasks, classes, onToggle }) {
               }}
             >
               <span className="text-sm font-medium">{num}</span>
-              {(tasksCount > 0 || classesCount > 0) && (
+              {(tasksCount > 0 || classesCount > 0 || evCount > 0) && (
                 <div className="flex gap-0.5 mt-0.5">
                   {tasksCount > 0 && <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: 'var(--color-purple)' }} />}
                   {classesCount > 0 && <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: 'var(--color-teal)' }} />}
+                  {evCount > 0 && <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: '#F59E0B' }} />}
                 </div>
               )}
             </button>
@@ -121,50 +149,91 @@ export default function CalendarView({ tasks, classes, onToggle }) {
         })}
       </div>
 
-      {/* Tareas del día seleccionado */}
+      {/* Detalle del día seleccionado */}
       {diaSeleccionado && (
         <div className="animate-fade-in-up">
           <h3 className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--color-muted)' }}>
             {formatFecha(diaSeleccionado)}
             {esHoy(diaSeleccionado) && <span className="ml-2 text-teal">(Hoy)</span>}
+            <button
+              onClick={() => { setEventDate(diaSeleccionado); setShowEventModal(true) }}
+              className="ml-3 text-[11px] font-medium px-2.5 py-1 rounded-lg text-white transition-all"
+              style={{ backgroundColor: '#F59E0B' }}
+            >
+              + Evento
+            </button>
           </h3>
 
-          {tareasDelDia.length === 0 && (
-            <p className="text-xs text-center py-4" style={{ color: 'var(--color-muted)' }}>Sin tareas este día</p>
+          {/* Eventos del día */}
+          {eventosDelDia.length > 0 && (
+            <div className="mb-4">
+              <h4 className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: '#F59E0B' }}>Eventos</h4>
+              <div className="space-y-2">
+                {eventosDelDia.map(ev => (
+                  <div key={ev.id} className="flex items-center gap-3 p-3 rounded-xl border" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
+                    <div className="w-1 h-8 rounded-full flex-shrink-0" style={{ backgroundColor: ev.color || '#F59E0B' }} />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium" style={{ color: 'var(--color-text)' }}>{ev.titulo}</p>
+                      {ev.descripcion && <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>{ev.descripcion}</p>}
+                      {ev.recordatorioDias && (
+                        <p className="text-[10px] mt-0.5" style={{ color: 'var(--color-muted)' }}>
+                          Recordatorio: {ev.recordatorioDias === 1 ? '1 día antes' : ev.recordatorioDias === 7 ? '1 semana antes' : `${ev.recordatorioDias} días antes`}
+                        </p>
+                      )}
+                    </div>
+                    <button onClick={() => onDeleteEvent(ev.id)} className="p-1 transition-colors" style={{ color: 'var(--color-muted)' }}>
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
 
-          <div className="space-y-2">
-            {tareasDelDia.map(t => (
-              <div
-                key={t.id}
-                className="flex items-center gap-3 p-3 rounded-xl border transition-colors"
-                style={{
-                  backgroundColor: 'var(--color-card)',
-                  borderColor: 'var(--color-border)',
-                  opacity: t.completada ? 0.6 : 1
-                }}
-              >
-                <button
-                  onClick={() => onToggle(t.id)}
-                  className="w-5 h-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all"
-                  style={{
-                    backgroundColor: t.completada ? 'var(--color-teal)' : 'transparent',
-                    borderColor: t.completada ? 'var(--color-teal)' : 'var(--color-muted)'
-                  }}
-                >
-                  {t.completada && (
-                    <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                  )}
-                </button>
-                <span className={`text-sm flex-1 ${t.completada ? 'line-through' : ''}`} style={{ color: 'var(--color-text)' }}>
-                  {t.titulo}
-                </span>
-                {t.hora && <span className="text-[11px] font-mono" style={{ color: 'var(--color-muted)' }}>{t.hora}</span>}
+          {/* Tareas del día */}
+          {tareasDelDia.length === 0 && eventosDelDia.length === 0 && (
+            <p className="text-xs text-center py-4" style={{ color: 'var(--color-muted)' }}>Sin tareas ni eventos este día</p>
+          )}
+
+          {tareasDelDia.length > 0 && (
+            <>
+              <h4 className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--color-muted)' }}>Tareas</h4>
+              <div className="space-y-2">
+                {tareasDelDia.map(t => (
+                  <div
+                    key={t.id}
+                    className="flex items-center gap-3 p-3 rounded-xl border transition-colors"
+                    style={{
+                      backgroundColor: 'var(--color-card)',
+                      borderColor: 'var(--color-border)',
+                      opacity: t.completada ? 0.6 : 1
+                    }}
+                  >
+                    <button
+                      onClick={() => onToggle(t.id)}
+                      className="w-5 h-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all"
+                      style={{
+                        backgroundColor: t.completada ? 'var(--color-teal)' : 'transparent',
+                        borderColor: t.completada ? 'var(--color-teal)' : 'var(--color-muted)'
+                      }}
+                    >
+                      {t.completada && (
+                        <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      )}
+                    </button>
+                    <span className={`text-sm flex-1 ${t.completada ? 'line-through' : ''}`} style={{ color: 'var(--color-text)' }}>
+                      {t.titulo}
+                    </span>
+                    {t.hora && <span className="text-[11px] font-mono" style={{ color: 'var(--color-muted)' }}>{t.hora}</span>}
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </>
+          )}
 
           {/* Clases del día */}
           {getClasesDelDia(diaSeleccionado).length > 0 && (
@@ -186,6 +255,15 @@ export default function CalendarView({ tasks, classes, onToggle }) {
             </div>
           )}
         </div>
+      )}
+
+      {/* Modal de nuevo evento */}
+      {showEventModal && (
+        <AddEventModal
+          onClose={() => setShowEventModal(false)}
+          onAdd={onAddEvent}
+          fecha={eventDate}
+        />
       )}
     </div>
   )
