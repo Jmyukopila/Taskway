@@ -65,7 +65,7 @@ export default function App() {
         }}
       >
         <h1 className="text-base font-bold" style={{ color: 'var(--color-text)' }}>
-          Mi Día
+          Taskway
         </h1>
         <div className="flex items-center gap-2">
           <button

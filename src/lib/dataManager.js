@@ -22,7 +22,7 @@ export function exportarDatos() {
   const payload = {
     version: DATA_VERSION,
     exportedAt: new Date().toISOString(),
-    app: 'Mi Dia',
+    app: 'Taskway',
     data
   }
 
@@ -44,8 +44,8 @@ export function importarDatos(file) {
       try {
         const payload = JSON.parse(e.target.result)
 
-        if (!payload || payload.app !== 'Mi Dia') {
-          reject(new Error('El archivo no es un backup valido de Mi Dia'))
+        if (!payload || payload.app !== 'Taskway') {
+          reject(new Error('El archivo no es un backup valido de Taskway'))
           return
         }
 

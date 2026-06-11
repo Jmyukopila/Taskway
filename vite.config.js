@@ -11,8 +11,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'offline.html'],
       manifest: {
-        name: 'Mi Día',
-        short_name: 'Mi Día',
+        name: 'Taskway',
+        short_name: 'Taskway',
         description: 'Organizador personal — horario de clases y checklist diario',
         theme_color: '#0f0f0f',
         background_color: '#0f0f0f',

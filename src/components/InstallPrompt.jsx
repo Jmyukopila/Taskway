@@ -14,7 +14,7 @@ export default function InstallPrompt() {
           </svg>
         </div>
         <div className="flex-1">
-          <p className="text-sm font-medium" style={{ color: 'var(--color-text)' }}>Instalar Mi Día</p>
+          <p className="text-sm font-medium" style={{ color: 'var(--color-text)' }}>Instalar Taskway</p>
           <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>Agrega la app a tu pantalla de inicio</p>
         </div>
         <div className="flex gap-2">
