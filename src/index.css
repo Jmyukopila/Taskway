@@ -1,0 +1,134 @@
+@import "tailwindcss";
+
+/* ========= TEMA OSCURO (default) ========= */
+:root {
+  --color-fondo: #0f0f0f;
+  --color-card: #1a1a1a;
+  --color-card-hover: #222222;
+  --color-teal: #1D9E75;
+  --color-teal-hover: #17a57a;
+  --color-purple: #7F77DD;
+  --color-purple-hover: #9088e8;
+  --color-muted: #6b7280;
+  --color-border: #2a2a2a;
+  --color-text: #f3f4f6;
+  --color-text-secondary: #9ca3af;
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+}
+
+/* ========= UTILITY CLASSES ========= */
+/* Backgrounds */
+.bg-fondo { background: var(--color-fondo) }
+.bg-card { background: var(--color-card) }
+.bg-card-hover { background: var(--color-card-hover) }
+.bg-teal { background: var(--color-teal) }
+.bg-teal-20 { background: color-mix(in srgb, var(--color-teal) 20%, transparent) }
+.bg-teal-30 { background: color-mix(in srgb, var(--color-teal) 30%, transparent) }
+.bg-purple { background: var(--color-purple) }
+.bg-purple-20 { background: color-mix(in srgb, var(--color-purple) 20%, transparent) }
+.bg-danger-10 { background: color-mix(in srgb, var(--color-danger) 10%, transparent) }
+.bg-danger-20 { background: color-mix(in srgb, var(--color-danger) 20%, transparent) }
+
+/* Text */
+.text-text { color: var(--color-text) }
+.text-text-secondary { color: var(--color-text-secondary) }
+.text-teal { color: var(--color-teal) }
+.text-purple { color: var(--color-purple) }
+.text-muted { color: var(--color-muted) }
+.text-danger { color: var(--color-danger) }
+.text-white { color: #fff }
+
+/* Borders */
+.border-border { border-color: var(--color-border) }
+.border-teal { border-color: var(--color-teal) }
+.border-teal-30 { border-color: color-mix(in srgb, var(--color-teal) 30%, transparent) }
+.border-teal-50 { border-color: color-mix(in srgb, var(--color-teal) 50%, transparent) }
+
+/* Hover backgrounds */
+.hover-bg-card-hover:hover { background: var(--color-card-hover) }
+.hover-bg-teal-hover:hover { background: var(--color-teal-hover) }
+.hover-bg-purple-hover:hover { background: var(--color-purple-hover) }
+.hover-bg-danger-10:hover { background: color-mix(in srgb, var(--color-danger) 10%, transparent) }
+
+/* Hover text */
+.hover-text-text:hover { color: var(--color-text) }
+.hover-text-danger:hover { color: var(--color-danger) }
+.hover-text-teal-hover:hover { color: var(--color-teal-hover) }
+
+/* Hover borders */
+.hover-border-teal:hover { border-color: var(--color-teal) }
+.hover-border-teal-50:hover { border-color: color-mix(in srgb, var(--color-teal) 50%, transparent) }
+.hover-border-teal-30:hover { border-color: color-mix(in srgb, var(--color-teal) 30%, transparent) }
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--color-fondo);
+  color: var(--color-text);
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100dvh;
+  background: var(--color-fondo);
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100dvh;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px }
+::-webkit-scrollbar-track { background: transparent }
+::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 2px }
+
+/* Animaciones */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px) }
+  to { opacity: 1; transform: translateY(0) }
+}
+@keyframes slideUp {
+  from { transform: translateY(100%) }
+  to { transform: translateY(0) }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95) }
+  to { opacity: 1; transform: scale(1) }
+}
+@keyframes fadeIn {
+  from { opacity: 0 }
+  to { opacity: 1 }
+}
+
+.animate-fade-in-up { animation: fadeInUp 0.4s ease-out both }
+.animate-slide-up { animation: slideUp 0.3s ease-out both }
+.animate-scale-in { animation: scaleIn 0.2s ease-out both }
+.animate-fade-in { animation: fadeIn 0.3s ease-out both }
+
+/* Inputs & selects */
+input, textarea, select {
+  background: var(--color-fondo);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+}
+input:focus, textarea:focus, select:focus {
+  border-color: var(--color-teal);
+  outline: none;
+}
+input::placeholder, textarea::placeholder {
+  color: var(--color-muted);
+}

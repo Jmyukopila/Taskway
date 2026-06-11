@@ -1,0 +1,14 @@
+{
+  "appId": "com.midia.app",
+  "appName": "Mi Día",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 0
+    }
+  }
+}

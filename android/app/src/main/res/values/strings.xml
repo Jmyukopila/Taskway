@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Mi Día</string>
+    <string name="title_activity_main">Mi Día</string>
+    <string name="package_name">com.midia.app</string>
+    <string name="custom_url_scheme">com.midia.app</string>
+</resources>
