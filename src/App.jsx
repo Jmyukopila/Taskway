@@ -16,6 +16,8 @@ import { GearIcon, ClockIcon } from './config/icons'
 import SettingsView from './views/SettingsView'
 import UpdatePrompt from './components/UpdatePrompt'
 import InstallPrompt from './components/InstallPrompt'
+import NovedadesModal from './components/NovedadesModal'
+import useNovedades from './hooks/useNovedades'
 import { hoy } from './lib/dates'
 
 export default function App() {
@@ -27,6 +29,7 @@ export default function App() {
   const { classes, addClass, deleteClass, updateClass } = useClasses()
   const { habits, addHabit, toggleHabit, deleteHabit, updateHabit } = useHabits()
   const { events, addEvent, deleteEvent } = useEvents()
+  const novedades = useNovedades()
 
   const handleToggleTask = useCallback((id) => toggleTask(id), [toggleTask])
 
@@ -107,7 +110,17 @@ export default function App() {
       )}
 
       {settingsOpen && (
-        <SettingsView onClose={() => setSettingsOpen(false)} alarmEnabled={alarmEnabled} setAlarmEnabled={setAlarmEnabled} />
+        <SettingsView
+          onClose={() => setSettingsOpen(false)}
+          alarmEnabled={alarmEnabled}
+          setAlarmEnabled={setAlarmEnabled}
+          onVerNovedades={() => { setSettingsOpen(false); novedades.abrirHistorial() }}
+          version={novedades.version}
+        />
+      )}
+
+      {novedades.abierto && (
+        <NovedadesModal entradas={novedades.entradas} onClose={novedades.cerrar} />
       )}
     </div>
   )

@@ -5,7 +5,7 @@ import { TEMAS } from '../config/themes'
 import {
   TemaDefaultIcon, TemaSepiaIcon, TemaOceanIcon, TemaMinimalIcon,
   EstiloClasicoIcon, EstiloAceroIcon, EstiloFloraIcon,
-  SunIcon, MoonIcon, CloseIcon, CheckIcon, BellIcon, DownloadIcon, UploadIcon,
+  SunIcon, MoonIcon, CloseIcon, CheckIcon, BellIcon, DownloadIcon, UploadIcon, StreakIcon,
   HoyIcon, CalendarioIcon, HabitosIcon, HorarioIcon, TareasIcon
 } from '../config/icons'
 import { exportarDatos, importarDatos } from '../lib/dataManager'
@@ -27,7 +27,7 @@ const FAMILIA_ICONS = {
 
 const PREVIEW_ICONS = [HoyIcon, CalendarioIcon, HabitosIcon, HorarioIcon, TareasIcon]
 
-export default function SettingsView({ onClose, alarmEnabled, setAlarmEnabled }) {
+export default function SettingsView({ onClose, alarmEnabled, setAlarmEnabled, onVerNovedades, version }) {
   const { theme, setTema, setFamilia, setVariante, toggleModo, temasDisponibles, familias, packActivo } = useTheme()
   const fileRef = useRef(null)
   const [importStatus, setImportStatus] = useState(null)
@@ -321,6 +321,22 @@ export default function SettingsView({ onClose, alarmEnabled, setAlarmEnabled })
                 </button>
                 <input ref={fileRef} type="file" accept=".json" onChange={handleImport} className="hidden" />
               </div>
+
+              <button
+                onClick={onVerNovedades}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border transition-colors text-sm"
+                style={{
+                  backgroundColor: 'var(--color-fondo)',
+                  borderColor: 'var(--color-border)',
+                  color: 'var(--color-text)'
+                }}
+              >
+                <StreakIcon className="w-5 h-5" />
+                <span>Novedades</span>
+                {version && (
+                  <span className="ml-auto text-[11px]" style={{ color: 'var(--color-muted)' }}>v{version}</span>
+                )}
+              </button>
             </div>
           </section>
         </div>
