@@ -1,3 +1,8 @@
+/**
+ * Familias y variantes de iconos. Cada variante puede redefinir SOLO colores de
+ * acento (teal/purple/success/warning/danger): fondo, borde y texto los pone el
+ * tema, que es quien conoce el modo claro/oscuro.
+ */
 export const FAMILIAS = [
   {
     key: 'clasico',
@@ -21,8 +26,6 @@ export const FAMILIAS = [
           'teal-hover': '#F472B6',
           purple: '#BE185D',
           'purple-hover': '#E11D48',
-          muted: '#A1A1AA',
-          border: '#3f2a3a',
           success: '#86EFAC',
           warning: '#FBBF24',
           danger: '#F43F5E'
@@ -38,8 +41,6 @@ export const FAMILIAS = [
           'teal-hover': '#F43F5E',
           purple: '#FB7185',
           'purple-hover': '#FDA4AF',
-          muted: '#A1A1AA',
-          border: '#3a2a2e',
           success: '#86EFAC',
           warning: '#FBBF24',
           danger: '#E84855'
@@ -55,8 +56,6 @@ export const FAMILIAS = [
           'teal-hover': '#D8B4FE',
           purple: '#38BDF8',
           'purple-hover': '#7DD3FC',
-          muted: '#A1A1AA',
-          border: '#2e2a3a',
           success: '#86EFAC',
           warning: '#FDE68A',
           danger: '#FCA5A5'
@@ -137,8 +136,4 @@ export function getSvgProps(familiaKey, varianteKey) {
   const fam = getFamilia(familiaKey)
   if (!fam) return { strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }
   return fam.svgProps || { strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }
-}
-
-export function getIconLookupKey(familiaKey, varianteKey) {
-  return varianteKey ? `${familiaKey}.${varianteKey}` : familiaKey
 }
