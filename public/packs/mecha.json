@@ -1,0 +1,132 @@
+{
+  "id": "mecha",
+  "nombre": "Mecha",
+  "descripcion": "Hangar de acero, cian de reactor y ambar de alerta",
+  "base": "acero",
+  "svg": {
+    "strokeWidth": 2.5,
+    "strokeLinecap": "square",
+    "strokeLinejoin": "miter"
+  },
+  "motivo": [
+    [
+      [
+        "M",
+        0.364,
+        -0.878
+      ],
+      [
+        "L",
+        0.878,
+        -0.364
+      ],
+      [
+        "L",
+        0.878,
+        0.364
+      ],
+      [
+        "L",
+        0.364,
+        0.878
+      ],
+      [
+        "L",
+        -0.364,
+        0.878
+      ],
+      [
+        "L",
+        -0.878,
+        0.364
+      ],
+      [
+        "L",
+        -0.878,
+        -0.364
+      ],
+      [
+        "L",
+        -0.364,
+        -0.878
+      ],
+      [
+        "Z"
+      ]
+    ]
+  ],
+  "colores": {
+    "dark": {
+      "fondo": "#0a0f14",
+      "card": "#111a22",
+      "card-hover": "#17242e",
+      "border": "#1e2f3b",
+      "text": "#e6f1f7",
+      "text-secondary": "#9fb6c4",
+      "muted": "#647d8c",
+      "teal": "#38BDF8",
+      "teal-hover": "#7DD3FC",
+      "purple": "#F59E0B",
+      "purple-hover": "#FBBF24",
+      "warning": "#F59E0B",
+      "danger": "#F43F5E",
+      "success": "#34D399"
+    },
+    "light": {
+      "fondo": "#f2f6f9",
+      "card": "#e6edf3",
+      "card-hover": "#dae4ec",
+      "border": "#c3d3df",
+      "text": "#0b1720",
+      "text-secondary": "#3f5666",
+      "muted": "#7d94a3",
+      "teal": "#0284C7",
+      "teal-hover": "#0369A1",
+      "purple": "#B45309",
+      "purple-hover": "#92400E",
+      "warning": "#B45309",
+      "danger": "#DC2626",
+      "success": "#059669"
+    }
+  },
+  "fondo": {
+    "dark": {
+      "capas": [
+        {
+          "tipo": "radial",
+          "color": "#0ea5e933",
+          "x": 50,
+          "y": 0,
+          "ancho": 120,
+          "alto": 45
+        },
+        {
+          "tipo": "rejilla",
+          "color": "#38bdf814",
+          "grosor": 1,
+          "paso": 32
+        }
+      ]
+    },
+    "light": {
+      "capas": [
+        {
+          "tipo": "radial",
+          "color": "#0ea5e926",
+          "x": 50,
+          "y": 0,
+          "ancho": 120,
+          "alto": 45
+        },
+        {
+          "tipo": "rejilla",
+          "color": "#0284c714",
+          "grosor": 1,
+          "paso": 32
+        }
+      ]
+    }
+  },
+  "formato": 1,
+  "autor": "Taskway"
+}

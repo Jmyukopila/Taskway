@@ -1,0 +1,164 @@
+{
+  "id": "kaiju",
+  "nombre": "Kaiju",
+  "descripcion": "Zarpazos, verde radiactivo y hormigon de ciudad",
+  "base": "acero",
+  "svg": {
+    "strokeWidth": 2.5,
+    "strokeLinecap": "butt",
+    "strokeLinejoin": "miter"
+  },
+  "motivo": [
+    [
+      [
+        "M",
+        -0.85,
+        -1
+      ],
+      [
+        "L",
+        -0.55,
+        -1
+      ],
+      [
+        "L",
+        -0.3,
+        1
+      ],
+      [
+        "L",
+        -0.6,
+        1
+      ],
+      [
+        "Z"
+      ]
+    ],
+    [
+      [
+        "M",
+        -0.23,
+        -1
+      ],
+      [
+        "L",
+        0.07,
+        -1
+      ],
+      [
+        "L",
+        0.32,
+        1
+      ],
+      [
+        "L",
+        0.02,
+        1
+      ],
+      [
+        "Z"
+      ]
+    ],
+    [
+      [
+        "M",
+        0.39,
+        -1
+      ],
+      [
+        "L",
+        0.69,
+        -1
+      ],
+      [
+        "L",
+        0.94,
+        1
+      ],
+      [
+        "L",
+        0.64,
+        1
+      ],
+      [
+        "Z"
+      ]
+    ]
+  ],
+  "colores": {
+    "dark": {
+      "fondo": "#0c1210",
+      "card": "#141c19",
+      "card-hover": "#1c2723",
+      "border": "#26332e",
+      "text": "#eaf5ef",
+      "text-secondary": "#a7bfb3",
+      "muted": "#6d8579",
+      "teal": "#84CC16",
+      "teal-hover": "#A3E635",
+      "purple": "#F59E0B",
+      "purple-hover": "#FBBF24",
+      "warning": "#F59E0B",
+      "danger": "#EF4444",
+      "success": "#22C55E"
+    },
+    "light": {
+      "fondo": "#f4f7f0",
+      "card": "#e9efe2",
+      "card-hover": "#dde6d3",
+      "border": "#c0cfae",
+      "text": "#111a12",
+      "text-secondary": "#3f5340",
+      "muted": "#7b8c78",
+      "teal": "#4D7C0F",
+      "teal-hover": "#3F6212",
+      "purple": "#B45309",
+      "purple-hover": "#92400E",
+      "warning": "#B45309",
+      "danger": "#DC2626",
+      "success": "#15803D"
+    }
+  },
+  "fondo": {
+    "dark": {
+      "capas": [
+        {
+          "tipo": "radial",
+          "color": "#84cc1626",
+          "x": 18,
+          "y": 100,
+          "ancho": 110,
+          "alto": 60
+        },
+        {
+          "tipo": "rayas",
+          "color": "#f59e0b14",
+          "angulo": 135,
+          "grosor": 6,
+          "paso": 22
+        }
+      ]
+    },
+    "light": {
+      "capas": [
+        {
+          "tipo": "radial",
+          "color": "#65a30d26",
+          "x": 18,
+          "y": 100,
+          "ancho": 110,
+          "alto": 60
+        },
+        {
+          "tipo": "rayas",
+          "color": "#b4530912",
+          "angulo": 135,
+          "grosor": 6,
+          "paso": 22
+        }
+      ]
+    }
+  },
+  "formato": 1,
+  "autor": "Taskway"
+}

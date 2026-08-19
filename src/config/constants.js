@@ -5,7 +5,8 @@ export const STORAGE_KEYS = {
   THEME: 'mi-dia-theme',
   POMODORO: 'mi-dia-pomodoro',
   EVENTS: 'mi-dia-events',
-  ALARM_ENABLED: 'mi-dia-alarm-enabled'
+  ALARM_ENABLED: 'mi-dia-alarm-enabled',
+  PACKS: 'mi-dia-packs'
 }
 
 export const PRIORIDADES = {

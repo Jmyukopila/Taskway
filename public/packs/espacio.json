@@ -1,0 +1,131 @@
+{
+  "id": "espacio",
+  "nombre": "Opera espacial",
+  "descripcion": "Campo de estrellas, indigo profundo y oro de nave",
+  "base": "clasico",
+  "svg": {
+    "strokeWidth": 2,
+    "strokeLinecap": "round",
+    "strokeLinejoin": "round"
+  },
+  "motivo": [
+    [
+      [
+        "M",
+        0,
+        -1
+      ],
+      [
+        "Q",
+        0.12,
+        -0.12,
+        1,
+        0
+      ],
+      [
+        "Q",
+        0.12,
+        0.12,
+        0,
+        1
+      ],
+      [
+        "Q",
+        -0.12,
+        0.12,
+        -1,
+        0
+      ],
+      [
+        "Q",
+        -0.12,
+        -0.12,
+        0,
+        -1
+      ],
+      [
+        "Z"
+      ]
+    ]
+  ],
+  "colores": {
+    "dark": {
+      "fondo": "#05060f",
+      "card": "#0d1020",
+      "card-hover": "#141a2e",
+      "border": "#1e2540",
+      "text": "#e8ecff",
+      "text-secondary": "#a9b4d6",
+      "muted": "#6c789e",
+      "teal": "#818CF8",
+      "teal-hover": "#A5B4FC",
+      "purple": "#FBBF24",
+      "purple-hover": "#FCD34D",
+      "warning": "#FBBF24",
+      "danger": "#F87171",
+      "success": "#4ADE80"
+    },
+    "light": {
+      "fondo": "#f5f7ff",
+      "card": "#e8ecfb",
+      "card-hover": "#dbe2f7",
+      "border": "#c3cdee",
+      "text": "#10162e",
+      "text-secondary": "#3d4a75",
+      "muted": "#7c88ad",
+      "teal": "#4F46E5",
+      "teal-hover": "#4338CA",
+      "purple": "#B45309",
+      "purple-hover": "#92400E",
+      "warning": "#B45309",
+      "danger": "#DC2626",
+      "success": "#047857"
+    }
+  },
+  "fondo": {
+    "dark": {
+      "capas": [
+        {
+          "tipo": "radial",
+          "color": "#4338ca40",
+          "x": 70,
+          "y": 12,
+          "ancho": 100,
+          "alto": 60
+        },
+        {
+          "tipo": "puntos",
+          "color": "#ffffff2e",
+          "radio": 1,
+          "paso": 44
+        },
+        {
+          "tipo": "puntos",
+          "color": "#a5b4fc26",
+          "radio": 1.5,
+          "paso": 97
+        }
+      ]
+    },
+    "light": {
+      "capas": [
+        {
+          "tipo": "radial",
+          "color": "#6366f133",
+          "x": 70,
+          "y": 12,
+          "ancho": 100,
+          "alto": 60
+        },
+        {
+          "tipo": "puntos",
+          "color": "#4f46e51a",
+          "radio": 1,
+          "paso": 44
+        }
+      ]
+    }
+  },
+  "formato": 1,
+  "autor": "Taskway"
+}

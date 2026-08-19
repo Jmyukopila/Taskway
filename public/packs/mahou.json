@@ -1,0 +1,142 @@
+{
+  "id": "mahou",
+  "nombre": "Magia",
+  "descripcion": "Estrellas, rosa varita y purpura de transformacion",
+  "base": "flora",
+  "svg": {
+    "strokeWidth": 1.5,
+    "strokeLinecap": "round",
+    "strokeLinejoin": "round"
+  },
+  "motivo": [
+    [
+      [
+        "M",
+        0.0,
+        -1.0
+      ],
+      [
+        "L",
+        0.247,
+        -0.34
+      ],
+      [
+        "L",
+        0.951,
+        -0.309
+      ],
+      [
+        "L",
+        0.399,
+        0.13
+      ],
+      [
+        "L",
+        0.588,
+        0.809
+      ],
+      [
+        "L",
+        0.0,
+        0.42
+      ],
+      [
+        "L",
+        -0.588,
+        0.809
+      ],
+      [
+        "L",
+        -0.399,
+        0.13
+      ],
+      [
+        "L",
+        -0.951,
+        -0.309
+      ],
+      [
+        "L",
+        -0.247,
+        -0.34
+      ],
+      [
+        "Z"
+      ]
+    ]
+  ],
+  "colores": {
+    "dark": {
+      "fondo": "#150c1c",
+      "card": "#1f1129",
+      "card-hover": "#2a1836",
+      "border": "#3a2148",
+      "text": "#fbeffd",
+      "text-secondary": "#d6b8e6",
+      "muted": "#96789f",
+      "teal": "#F472B6",
+      "teal-hover": "#F9A8D4",
+      "purple": "#C084FC",
+      "purple-hover": "#D8B4FE",
+      "warning": "#FDE047",
+      "danger": "#FB7185",
+      "success": "#86EFAC"
+    },
+    "light": {
+      "fondo": "#fdf4ff",
+      "card": "#fae8ff",
+      "card-hover": "#f5d0fe",
+      "border": "#eeb3f5",
+      "text": "#2b1132",
+      "text-secondary": "#6b3f76",
+      "muted": "#a97fb4",
+      "teal": "#DB2777",
+      "teal-hover": "#BE185D",
+      "purple": "#9333EA",
+      "purple-hover": "#7E22CE",
+      "warning": "#A16207",
+      "danger": "#E11D48",
+      "success": "#047857"
+    }
+  },
+  "fondo": {
+    "dark": {
+      "capas": [
+        {
+          "tipo": "radial",
+          "color": "#c084fc3d",
+          "x": 25,
+          "y": 0,
+          "ancho": 100,
+          "alto": 55
+        },
+        {
+          "tipo": "puntos",
+          "color": "#f472b626",
+          "radio": 1.5,
+          "paso": 26
+        }
+      ]
+    },
+    "light": {
+      "capas": [
+        {
+          "tipo": "radial",
+          "color": "#c084fc40",
+          "x": 25,
+          "y": 0,
+          "ancho": 100,
+          "alto": 55
+        },
+        {
+          "tipo": "puntos",
+          "color": "#db27771a",
+          "radio": 1.5,
+          "paso": 26
+        }
+      ]
+    }
+  },
+  "formato": 1,
+  "autor": "Taskway"
+}

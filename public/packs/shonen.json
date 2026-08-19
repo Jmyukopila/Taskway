@@ -1,0 +1,134 @@
+{
+  "id": "shonen",
+  "nombre": "Shonen",
+  "descripcion": "Tinta, naranja de impacto y lineas de velocidad",
+  "base": "acero",
+  "svg": {
+    "strokeWidth": 2.5,
+    "strokeLinecap": "square",
+    "strokeLinejoin": "miter"
+  },
+  "motivo": [
+    [
+      [
+        "M",
+        0.0,
+        -1.0
+      ],
+      [
+        "L",
+        0.226,
+        -0.226
+      ],
+      [
+        "L",
+        1.0,
+        0.0
+      ],
+      [
+        "L",
+        0.226,
+        0.226
+      ],
+      [
+        "L",
+        0.0,
+        1.0
+      ],
+      [
+        "L",
+        -0.226,
+        0.226
+      ],
+      [
+        "L",
+        -1.0,
+        0.0
+      ],
+      [
+        "L",
+        -0.226,
+        -0.226
+      ],
+      [
+        "Z"
+      ]
+    ]
+  ],
+  "colores": {
+    "dark": {
+      "fondo": "#120c0a",
+      "card": "#1e1512",
+      "card-hover": "#291c17",
+      "border": "#3a281f",
+      "text": "#fdf6f0",
+      "text-secondary": "#c9b3a5",
+      "muted": "#8a7266",
+      "teal": "#F97316",
+      "teal-hover": "#FB923C",
+      "purple": "#FACC15",
+      "purple-hover": "#FDE047",
+      "warning": "#FACC15",
+      "danger": "#EF4444",
+      "success": "#22C55E"
+    },
+    "light": {
+      "fondo": "#fff7ed",
+      "card": "#ffedd5",
+      "card-hover": "#fed7aa",
+      "border": "#f3c391",
+      "text": "#1c1917",
+      "text-secondary": "#57534e",
+      "muted": "#a8a29e",
+      "teal": "#EA580C",
+      "teal-hover": "#C2410C",
+      "purple": "#A16207",
+      "purple-hover": "#854D0E",
+      "warning": "#A16207",
+      "danger": "#DC2626",
+      "success": "#15803D"
+    }
+  },
+  "fondo": {
+    "dark": {
+      "capas": [
+        {
+          "tipo": "radial",
+          "color": "#f9731640",
+          "x": 80,
+          "y": 6,
+          "ancho": 90,
+          "alto": 55
+        },
+        {
+          "tipo": "rayas",
+          "color": "#ffffff0f",
+          "angulo": 62,
+          "grosor": 2,
+          "paso": 18
+        }
+      ]
+    },
+    "light": {
+      "capas": [
+        {
+          "tipo": "radial",
+          "color": "#fb923c4d",
+          "x": 80,
+          "y": 6,
+          "ancho": 90,
+          "alto": 55
+        },
+        {
+          "tipo": "rayas",
+          "color": "#9a341012",
+          "angulo": 62,
+          "grosor": 2,
+          "paso": 18
+        }
+      ]
+    }
+  },
+  "formato": 1,
+  "autor": "Taskway"
+}

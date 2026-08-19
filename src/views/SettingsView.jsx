@@ -9,6 +9,7 @@ import {
   HoyIcon, CalendarioIcon, HabitosIcon, HorarioIcon, TareasIcon
 } from '../config/icons'
 import { exportarDatos, importarDatos } from '../lib/dataManager'
+import PackManager from '../components/PackManager'
 import { pedirPermiso } from '../utils/pushNotifications'
 
 const THEME_ICONS = {
@@ -27,7 +28,7 @@ const FAMILIA_ICONS = {
 const PREVIEW_ICONS = [HoyIcon, CalendarioIcon, HabitosIcon, HorarioIcon, TareasIcon]
 
 export default function SettingsView({ onClose, alarmEnabled, setAlarmEnabled }) {
-  const { theme, setTema, setFamilia, setVariante, toggleModo, temasDisponibles, familias } = useTheme()
+  const { theme, setTema, setFamilia, setVariante, toggleModo, temasDisponibles, familias, packActivo } = useTheme()
   const fileRef = useRef(null)
   const [importStatus, setImportStatus] = useState(null)
   const [permisoNotif, setPermisoNotif] = useState(
@@ -85,10 +86,15 @@ export default function SettingsView({ onClose, alarmEnabled, setAlarmEnabled })
           {/* === TEMAS === */}
           <section>
             <h3 className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--color-muted)' }}>Temas</h3>
+            {packActivo && (
+              <p className="text-[11px] mb-2" style={{ color: 'var(--color-muted)' }}>
+                Manda el paquete <strong style={{ color: 'var(--color-teal)' }}>{packActivo.nombre}</strong>. Al elegir un tema o una familia se quita.
+              </p>
+            )}
             <div className="grid grid-cols-2 gap-3">
               {temasDisponibles.map(t => {
                 const IconComp = THEME_ICONS[t.icon]
-                const activo = theme.tema === t.key
+                const activo = !packActivo && theme.tema === t.key
                 const temaData = TEMAS[t.key]
                 const colores = temaData ? [
                   temaData[theme.modo]?.fondo,
@@ -131,7 +137,7 @@ export default function SettingsView({ onClose, alarmEnabled, setAlarmEnabled })
             <div className="grid grid-cols-3 gap-3">
               {familias.map(fam => {
                 const IconComp = FAMILIA_ICONS[fam.key]
-                const activo = theme.familia === fam.key
+                const activo = !packActivo && theme.familia === fam.key
                 return (
                   <button
                     key={fam.key}
@@ -162,7 +168,7 @@ export default function SettingsView({ onClose, alarmEnabled, setAlarmEnabled })
                 <h4 className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--color-muted)' }}>Variante</h4>
                 <div className="grid grid-cols-3 gap-2">
                   {familiaActual.variantes.map(v => {
-                    const activo = varianteActual === v.key
+                    const activo = !packActivo && varianteActual === v.key
                     return (
                       <button
                         key={v.key}
@@ -205,6 +211,8 @@ export default function SettingsView({ onClose, alarmEnabled, setAlarmEnabled })
               ))}
             </div>
           </section>
+
+          <PackManager />
 
           {/* === CONFIGURACION === */}
           <section>

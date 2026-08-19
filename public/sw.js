@@ -32,6 +32,19 @@ workbox.routing.registerRoute(
   new workbox.strategies.StaleWhileRevalidate()
 )
 
+// Paquetes de temas: se prefiere la red para ver el catalogo actualizado, pero
+// quedan en cache para poder aplicarlos sin conexion.
+workbox.routing.registerRoute(
+  ({ url }) => url.pathname.includes('/packs/'),
+  new workbox.strategies.NetworkFirst({
+    cacheName: 'taskway-packs',
+    networkTimeoutSeconds: 5,
+    plugins: [
+      new workbox.expiration.ExpirationPlugin({ maxEntries: 32, maxAgeSeconds: 30 * 24 * 60 * 60 })
+    ]
+  })
+)
+
 function notificarClients() {
   clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
     list.forEach(c => c.postMessage({ type: 'play-alarm' }))

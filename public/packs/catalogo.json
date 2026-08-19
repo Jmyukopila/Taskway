@@ -1,0 +1,115 @@
+{
+  "formato": 1,
+  "packs": [
+    {
+      "id": "shonen",
+      "nombre": "Shonen",
+      "descripcion": "Tinta, naranja de impacto y lineas de velocidad",
+      "muestra": [
+        "#120c0a",
+        "#F97316",
+        "#FACC15",
+        "#1e1512"
+      ]
+    },
+    {
+      "id": "mecha",
+      "nombre": "Mecha",
+      "descripcion": "Hangar de acero, cian de reactor y ambar de alerta",
+      "muestra": [
+        "#0a0f14",
+        "#38BDF8",
+        "#F59E0B",
+        "#111a22"
+      ]
+    },
+    {
+      "id": "mahou",
+      "nombre": "Magia",
+      "descripcion": "Estrellas, rosa varita y purpura de transformacion",
+      "muestra": [
+        "#150c1c",
+        "#F472B6",
+        "#C084FC",
+        "#1f1129"
+      ]
+    },
+    {
+      "id": "retro",
+      "nombre": "Retro VHS",
+      "descripcion": "Rejilla neon, magenta y cian de cinta gastada",
+      "muestra": [
+        "#0b0420",
+        "#22D3EE",
+        "#F472B6",
+        "#160a33"
+      ]
+    },
+    {
+      "id": "espacio",
+      "nombre": "Opera espacial",
+      "descripcion": "Campo de estrellas, indigo profundo y oro de nave",
+      "muestra": [
+        "#05060f",
+        "#818CF8",
+        "#FBBF24",
+        "#0d1020"
+      ]
+    },
+    {
+      "id": "kaiju",
+      "nombre": "Kaiju",
+      "descripcion": "Zarpazos, verde radiactivo y hormigon de ciudad",
+      "muestra": [
+        "#0c1210",
+        "#84CC16",
+        "#F59E0B",
+        "#141c19"
+      ]
+    },
+    {
+      "id": "ichimatsu",
+      "nombre": "Ichimatsu",
+      "descripcion": "Tablero verde, brasa de forja y estrella de canamo",
+      "muestra": [
+        "#0c110f",
+        "#16A34A",
+        "#F97316",
+        "#121a17"
+      ]
+    },
+    {
+      "id": "sakura",
+      "nombre": "Sakura",
+      "descripcion": "Petalos al viento, rosa de cerezo y oro de sello",
+      "muestra": [
+        "#1a1016",
+        "#F472B6",
+        "#FCD34D",
+        "#241722"
+      ]
+    },
+    {
+      "id": "espectro",
+      "nombre": "Espectro urbano",
+      "descripcion": "Asfalto, grietas y un rojo que no se lava",
+      "muestra": [
+        "#08090b",
+        "#DC2626",
+        "#E5E7EB",
+        "#101216"
+      ]
+    },
+    {
+      "id": "seigaiha",
+      "nombre": "Seigaiha",
+      "descripcion": "Olas de indigo, oro viejo y calma de biombo",
+      "muestra": [
+        "#0a1020",
+        "#60A5FA",
+        "#D4A24C",
+        "#111a30"
+      ]
+    }
+  ]
+}

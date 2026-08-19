@@ -1,0 +1,133 @@
+{
+  "id": "retro",
+  "nombre": "Retro VHS",
+  "descripcion": "Rejilla neon, magenta y cian de cinta gastada",
+  "base": "clasico",
+  "svg": {
+    "strokeWidth": 2,
+    "strokeLinecap": "round",
+    "strokeLinejoin": "round"
+  },
+  "motivo": [
+    [
+      [
+        "M",
+        0,
+        -1
+      ],
+      [
+        "L",
+        1,
+        0
+      ],
+      [
+        "L",
+        0,
+        1
+      ],
+      [
+        "L",
+        -1,
+        0
+      ],
+      [
+        "Z"
+      ]
+    ],
+    [
+      [
+        "M",
+        0,
+        -0.45
+      ],
+      [
+        "L",
+        0.45,
+        0
+      ],
+      [
+        "L",
+        0,
+        0.45
+      ],
+      [
+        "L",
+        -0.45,
+        0
+      ],
+      [
+        "Z"
+      ]
+    ]
+  ],
+  "colores": {
+    "dark": {
+      "fondo": "#0b0420",
+      "card": "#160a33",
+      "card-hover": "#1f1046",
+      "border": "#2d1a5e",
+      "text": "#f6e9ff",
+      "text-secondary": "#c4a8f0",
+      "muted": "#8266b8",
+      "teal": "#22D3EE",
+      "teal-hover": "#67E8F9",
+      "purple": "#F472B6",
+      "purple-hover": "#FB7185",
+      "warning": "#FDE047",
+      "danger": "#FB7185",
+      "success": "#4ADE80"
+    },
+    "light": {
+      "fondo": "#f5f3ff",
+      "card": "#ede9fe",
+      "card-hover": "#ddd6fe",
+      "border": "#bfaffb",
+      "text": "#1e1b4b",
+      "text-secondary": "#4c1d95",
+      "muted": "#8b7fc0",
+      "teal": "#0891B2",
+      "teal-hover": "#0E7490",
+      "purple": "#DB2777",
+      "purple-hover": "#BE185D",
+      "warning": "#B45309",
+      "danger": "#DC2626",
+      "success": "#047857"
+    }
+  },
+  "fondo": {
+    "dark": {
+      "capas": [
+        {
+          "tipo": "lineal",
+          "color": "#7c3aed4d",
+          "color2": "#0b042000",
+          "angulo": 0
+        },
+        {
+          "tipo": "rejilla",
+          "color": "#22d3ee1f",
+          "grosor": 1,
+          "paso": 24
+        }
+      ]
+    },
+    "light": {
+      "capas": [
+        {
+          "tipo": "lineal",
+          "color": "#a78bfa4d",
+          "color2": "#f5f3ff00",
+          "angulo": 0
+        },
+        {
+          "tipo": "rejilla",
+          "color": "#0891b214",
+          "grosor": 1,
+          "paso": 24
+        }
+      ]
+    }
+  },
+  "formato": 1,
+  "autor": "Taskway"
+}
