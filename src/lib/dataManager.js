@@ -1,12 +1,11 @@
 import { STORAGE_KEYS } from '../config/constants'
 import { loadJSON } from './storage'
+import { hoy } from './dates'
 
 const DATA_VERSION = 1
 
 function getFilename() {
-  const d = new Date()
-  const fecha = d.toISOString().split('T')[0]
-  return `mi-dia-backup-${fecha}.json`
+  return `taskway-backup-${hoy()}.json`
 }
 
 export function exportarDatos() {
@@ -60,13 +59,15 @@ export function importarDatos(file) {
           return
         }
 
+        // Solo se restauran claves conocidas: un backup manipulado no deberia
+        // poder escribir cualquier cosa en el localStorage de la app.
+        const permitidas = new Set(Object.values(STORAGE_KEYS))
         Object.entries(data).forEach(([key, value]) => {
-          if (value !== null) {
-            try {
-              localStorage.setItem(key, JSON.stringify(value))
-            } catch {
-              // skip if key not recognized
-            }
+          if (value === null || !permitidas.has(key)) return
+          try {
+            localStorage.setItem(key, JSON.stringify(value))
+          } catch {
+            // cuota llena o valor no serializable: se ignora esa clave
           }
         })
 

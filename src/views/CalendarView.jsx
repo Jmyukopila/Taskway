@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
 import { mesNombre, diasEnMes, primerDiaMes, hoy, esHoy, formatFecha } from '../lib/dates'
 import AddEventModal from '../components/AddEventModal'
+import { ChevronLeftIcon, ChevronRightIcon, TrashIcon, CheckIcon, PlusIcon } from '../config/icons'
 
 const DIAS_LABEL = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
 
@@ -67,12 +68,7 @@ export default function CalendarView({ tasks, classes, events, onToggle, onAddEv
   }
 
   const handleDayClick = (dateStr) => {
-    if (diaSeleccionado === dateStr) {
-      setEventDate(dateStr)
-      setShowEventModal(true)
-    } else {
-      setDiaSeleccionado(dateStr)
-    }
+    setDiaSeleccionado(prev => prev === dateStr ? null : dateStr)
   }
 
   const getClasesDelDia = (dateStr) => {
@@ -83,21 +79,17 @@ export default function CalendarView({ tasks, classes, events, onToggle, onAddEv
   }
 
   return (
-    <div className="flex-1 px-4 pt-4 pb-4 overflow-y-auto">
+    <div className="flex-1 px-4 pt-4 pb-8 overflow-y-auto">
       {/* Header del mes */}
       <div className="flex items-center justify-between mb-4 animate-fade-in-up">
-        <button onClick={prevMonth} className="p-2 rounded-xl transition-colors" style={{ color: 'var(--color-muted)' }}>
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-          </svg>
+        <button onClick={prevMonth} className="p-2 rounded-xl transition-colors" style={{ color: 'var(--color-muted)' }} aria-label="Mes anterior">
+          <ChevronLeftIcon className="w-5 h-5" />
         </button>
         <h2 className="text-lg font-bold" style={{ color: 'var(--color-text)' }}>
           {mesNombre(month)} {year}
         </h2>
-        <button onClick={nextMonth} className="p-2 rounded-xl transition-colors" style={{ color: 'var(--color-muted)' }}>
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-          </svg>
+        <button onClick={nextMonth} className="p-2 rounded-xl transition-colors" style={{ color: 'var(--color-muted)' }} aria-label="Mes siguiente">
+          <ChevronRightIcon className="w-5 h-5" />
         </button>
       </div>
 
@@ -126,6 +118,8 @@ export default function CalendarView({ tasks, classes, events, onToggle, onAddEv
             <button
               key={dateStr}
               onClick={() => handleDayClick(dateStr)}
+              aria-label={`${formatFecha(dateStr)}${tasksCount ? `, ${tasksCount} tareas` : ''}${evCount ? `, ${evCount} eventos` : ''}`}
+              aria-pressed={selected}
               className="relative aspect-square rounded-xl flex flex-col items-center justify-center text-sm transition-all"
               style={{
                 backgroundColor: selected
@@ -141,7 +135,7 @@ export default function CalendarView({ tasks, classes, events, onToggle, onAddEv
                 <div className="flex gap-0.5 mt-0.5">
                   {tasksCount > 0 && <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: 'var(--color-purple)' }} />}
                   {classesCount > 0 && <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: 'var(--color-teal)' }} />}
-                  {evCount > 0 && <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: '#F59E0B' }} />}
+                  {evCount > 0 && <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: 'var(--color-warning)' }} />}
                 </div>
               )}
             </button>
@@ -152,26 +146,29 @@ export default function CalendarView({ tasks, classes, events, onToggle, onAddEv
       {/* Detalle del día seleccionado */}
       {diaSeleccionado && (
         <div className="animate-fade-in-up">
-          <h3 className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--color-muted)' }}>
-            {formatFecha(diaSeleccionado)}
-            {esHoy(diaSeleccionado) && <span className="ml-2 text-teal">(Hoy)</span>}
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--color-muted)' }}>
+              {formatFecha(diaSeleccionado)}
+              {esHoy(diaSeleccionado) && <span className="ml-2 text-teal">(Hoy)</span>}
+            </h3>
             <button
               onClick={() => { setEventDate(diaSeleccionado); setShowEventModal(true) }}
-              className="ml-3 text-[11px] font-medium px-2.5 py-1 rounded-lg text-white transition-all"
-              style={{ backgroundColor: '#F59E0B' }}
+              className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg text-white transition-all active:scale-95"
+              style={{ backgroundColor: 'var(--color-warning)' }}
             >
-              + Evento
+              <PlusIcon className="w-3 h-3" />
+              Evento
             </button>
-          </h3>
+          </div>
 
           {/* Eventos del día */}
           {eventosDelDia.length > 0 && (
             <div className="mb-4">
-              <h4 className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: '#F59E0B' }}>Eventos</h4>
+              <h4 className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--color-warning)' }}>Eventos</h4>
               <div className="space-y-2">
                 {eventosDelDia.map(ev => (
                   <div key={ev.id} className="flex items-center gap-3 p-3 rounded-xl border" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
-                    <div className="w-1 h-8 rounded-full flex-shrink-0" style={{ backgroundColor: ev.color || '#F59E0B' }} />
+                    <div className="w-1 h-8 rounded-full flex-shrink-0" style={{ backgroundColor: ev.color || 'var(--color-warning)' }} />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium" style={{ color: 'var(--color-text)' }}>{ev.titulo}</p>
                       {ev.descripcion && <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>{ev.descripcion}</p>}
@@ -181,10 +178,8 @@ export default function CalendarView({ tasks, classes, events, onToggle, onAddEv
                         </p>
                       )}
                     </div>
-                    <button onClick={() => onDeleteEvent(ev.id)} className="p-1 transition-colors" style={{ color: 'var(--color-muted)' }}>
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
+                    <button onClick={() => onDeleteEvent(ev.id)} className="p-1 transition-colors" style={{ color: 'var(--color-muted)' }} aria-label={`Eliminar evento ${ev.titulo}`}>
+                      <TrashIcon className="w-4 h-4" />
                     </button>
                   </div>
                 ))}
@@ -213,17 +208,16 @@ export default function CalendarView({ tasks, classes, events, onToggle, onAddEv
                   >
                     <button
                       onClick={() => onToggle(t.id)}
+                      role="checkbox"
+                      aria-checked={!!t.completada}
+                      aria-label={t.titulo}
                       className="w-5 h-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all"
                       style={{
                         backgroundColor: t.completada ? 'var(--color-teal)' : 'transparent',
                         borderColor: t.completada ? 'var(--color-teal)' : 'var(--color-muted)'
                       }}
                     >
-                      {t.completada && (
-                        <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                        </svg>
-                      )}
+                      {t.completada && <CheckIcon className="w-3 h-3" style={{ color: '#fff' }} />}
                     </button>
                     <span className={`text-sm flex-1 ${t.completada ? 'line-through' : ''}`} style={{ color: 'var(--color-text)' }}>
                       {t.titulo}

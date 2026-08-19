@@ -67,8 +67,10 @@ export default function AddEventModal({ onClose, onAdd, fecha }) {
           <div className="flex gap-2">
             {COLORES.map(c => (
               <button key={c} type="button" onClick={() => setColor(c)}
-                className={`w-8 h-8 rounded-full transition-all ${color === c ? 'ring-2 ring-offset-2 scale-110' : 'hover:scale-110'}`}
-                style={{ backgroundColor: c, '--tw-ring-color': '#fff', '--tw-ring-offset-color': 'var(--color-card)' }} />
+                className="w-8 h-8 rounded-full transition-all"
+                style={{ backgroundColor: c, outline: color === c ? `2px solid ${c}` : 'none', outlineOffset: '3px' }}
+                aria-label={`Color ${c}`}
+                aria-pressed={color === c} />
             ))}
           </div>
         </div>

@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
 import TaskCard from './TaskCard'
 import { ahora } from '../lib/dates'
+import { EmptyIcon, ChevronDownIcon, CheckIcon } from '../config/icons'
 
 export default function DayTimeline({ tareas, clases, onToggle, onDeleteTask, toggleSubtask, onEditTask }) {
   const tareasConHora = useMemo(() =>
@@ -18,10 +19,8 @@ export default function DayTimeline({ tareas, clases, onToggle, onDeleteTask, to
 
   if (tareas.length === 0 && clases.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 px-4 empty-state animate-fade-in-up">
-        <svg className="w-24 h-24 mb-4" style={{ color: 'var(--color-muted)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={0.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-        </svg>
+      <div className="flex flex-col items-center justify-center py-16 px-4 animate-fade-in-up">
+        <EmptyIcon className="w-20 h-20 mb-4" style={{ color: 'var(--color-muted)', opacity: 0.6 }} />
         <p className="text-sm text-center" style={{ color: 'var(--color-muted)' }}>Sin nada pendiente por hoy</p>
         <p className="text-xs mt-1 text-center" style={{ color: 'var(--color-text-secondary)' }}>Agrega tareas y clases para ver tu día organizado</p>
       </div>
@@ -66,9 +65,7 @@ export default function DayTimeline({ tareas, clases, onToggle, onDeleteTask, to
                   }}>
                   {tarea.completada && (
                     <div className="w-full h-full rounded-full flex items-center justify-center" style={{ backgroundColor: 'var(--color-teal)' }}>
-                      <svg className="w-2 h-2 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={4}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                      </svg>
+                      <CheckIcon className="w-2 h-2" style={{ color: '#fff' }} />
                     </div>
                   )}
                 </div>
@@ -85,14 +82,11 @@ export default function DayTimeline({ tareas, clases, onToggle, onDeleteTask, to
       {/* Sin hora */}
       {tareasSinHora.length > 0 && (
         <div className="mt-4">
-          <button onClick={() => setExpanded(!expanded)} className="flex items-center justify-between w-full px-1 mb-2">
+          <button onClick={() => setExpanded(!expanded)} className="flex items-center justify-between w-full px-1 mb-2" aria-expanded={expanded}>
             <h3 className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--color-muted)' }}>
               Sin hora ({tareasSinHora.length})
             </h3>
-            <svg className={`w-4 h-4 transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`} style={{ color: 'var(--color-muted)' }}
-              fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-            </svg>
+            <ChevronDownIcon className={`w-4 h-4 transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`} style={{ color: 'var(--color-muted)' }} />
           </button>
           {expanded && (
             <div className="space-y-2">

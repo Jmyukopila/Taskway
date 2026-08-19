@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import DayTimeline from '../components/DayTimeline'
 import { hoy, diaSemana, formatFecha } from '../lib/dates'
+import { ChevronRightIcon, CheckIcon } from '../config/icons'
 
 function getSaludo() {
   const h = new Date().getHours()
@@ -24,7 +25,7 @@ export default function TodayView({ tasks, classes, onToggle, onDeleteTask, togg
   const tareasPendientesHoy = useMemo(() => tareasHoy.filter(t => !t.completada), [tareasHoy])
 
   return (
-    <div className="flex-1 px-4 pt-4 pb-4 overflow-y-auto">
+    <div className="flex-1 px-4 pt-4 pb-8 overflow-y-auto">
       <div className="mb-6 animate-fade-in-up">
         <p className="text-xs font-medium" style={{ color: 'var(--color-muted)' }}>{getSaludo()}</p>
         <h1 className="text-xl font-bold mt-0.5" style={{ color: 'var(--color-text)' }}>{formatFecha(hoyStr)}</h1>
@@ -62,9 +63,7 @@ export default function TodayView({ tasks, classes, onToggle, onDeleteTask, togg
         <details className="mt-6 group">
           <summary className="text-xs font-medium cursor-pointer list-none flex items-center gap-1 transition-colors"
             style={{ color: 'var(--color-muted)' }}>
-            <svg className="w-3.5 h-3.5 transition-transform group-open:rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-            </svg>
+            <ChevronRightIcon className="w-3.5 h-3.5 transition-transform group-open:rotate-90" />
             Completadas ({tareasCompletadasHoy.length})
           </summary>
           <div className="mt-3 space-y-2">
@@ -73,9 +72,7 @@ export default function TodayView({ tasks, classes, onToggle, onDeleteTask, togg
                 style={{ backgroundColor: 'color-mix(in srgb, var(--color-card) 50%, transparent)', borderColor: 'var(--color-border)', opacity: 0.6 }}>
                 <div className="w-5 h-5 rounded-full flex items-center justify-center"
                   style={{ backgroundColor: 'color-mix(in srgb, var(--color-teal) 30%, transparent)' }}>
-                  <svg className="w-3 h-3" style={{ color: 'var(--color-teal)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                  </svg>
+                  <CheckIcon className="w-3 h-3" style={{ color: 'var(--color-teal)' }} />
                 </div>
                 <span className="text-sm line-through" style={{ color: 'var(--color-text)' }}>{t.titulo}</span>
               </div>

@@ -1,6 +1,7 @@
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { loadJSON, saveJSON } from '../lib/storage'
 import { STORAGE_KEYS } from '../config/constants'
+import { CloseIcon, GearIcon, CheckIcon } from '../config/icons'
 
 const DURACIONES_DEFAULT = {
   trabajo: 25 * 60,
@@ -8,166 +9,180 @@ const DURACIONES_DEFAULT = {
   descansoLargo: 15 * 60
 }
 
-export default function PomodoroTimer({ onClose, tareasPendientes = [] }) {
-  const [durations, setDurations] = useState(() => {
-    const saved = loadJSON(STORAGE_KEYS.POMODORO, null)
-    return saved || DURACIONES_DEFAULT
-  })
+const NOMBRE_MODO = {
+  trabajo: 'Enfoque',
+  descansoCorto: 'Descanso',
+  descansoLargo: 'Descanso largo'
+}
+
+const CAMPOS_DURACION = [
+  { key: 'trabajo', label: 'Enfoque', defaultMin: 25 },
+  { key: 'descansoCorto', label: 'Descanso corto', defaultMin: 5 },
+  { key: 'descansoLargo', label: 'Descanso largo', defaultMin: 15 }
+]
+
+function notificar(modo) {
+  if (!('Notification' in window) || Notification.permission !== 'granted') return
+  const msg = modo === 'trabajo' ? '¡Tiempo de descanso!' : '¡Tiempo de trabajar!'
+  new Notification('Taskway — Pomodoro', { body: msg, tag: 'pomodoro' })
+}
+
+export default function PomodoroTimer({ onClose, tareasPendientes = [], onToggle }) {
+  const [durations, setDurations] = useState(() => loadJSON(STORAGE_KEYS.POMODORO, null) || DURACIONES_DEFAULT)
   const [modo, setModo] = useState('trabajo')
   const [tiempo, setTiempo] = useState(() => durations.trabajo)
-  const [corriendo, setCorriendo] = useState(false)
+  // Instante en el que acaba la fase. Contar sobre un deadline en vez de restar
+  // un segundo por tick evita que el temporizador se atrase cuando el navegador
+  // ralentiza los intervalos con la pestana en segundo plano.
+  const [finAt, setFinAt] = useState(null)
   const [ciclos, setCiclos] = useState(0)
   const [tareaActiva, setTareaActiva] = useState(null)
   const [editMode, setEditMode] = useState(false)
-  const intervalRef = useRef(null)
-  const notifRef = useRef(false)
+
+  const corriendo = finAt !== null
+
+  const finalizarFase = useCallback(() => {
+    setFinAt(null)
+    notificar(modo)
+    if (modo === 'trabajo') {
+      const nuevoCiclo = ciclos + 1
+      const largo = nuevoCiclo % 4 === 0
+      setCiclos(nuevoCiclo)
+      setModo(largo ? 'descansoLargo' : 'descansoCorto')
+      setTiempo(largo ? durations.descansoLargo : durations.descansoCorto)
+    } else {
+      setModo('trabajo')
+      setTiempo(durations.trabajo)
+    }
+  }, [modo, ciclos, durations])
 
   useEffect(() => {
-    return () => { if (intervalRef.current) clearInterval(intervalRef.current) }
-  }, [])
+    if (finAt === null) return
+    let finalizado = false
+    const id = setInterval(() => {
+      const restante = Math.max(0, Math.round((finAt - Date.now()) / 1000))
+      setTiempo(restante)
+      if (restante === 0 && !finalizado) {
+        finalizado = true
+        finalizarFase()
+      }
+    }, 250)
+    return () => clearInterval(id)
+  }, [finAt, finalizarFase])
 
-  const detener = useCallback(() => {
-    if (intervalRef.current) clearInterval(intervalRef.current)
-    setCorriendo(false)
-  }, [])
+  const alternarMarcha = () => {
+    if (corriendo) setFinAt(null)
+    else if (tiempo > 0) setFinAt(Date.now() + tiempo * 1000)
+    else {
+      setTiempo(durations[modo])
+      setFinAt(Date.now() + durations[modo] * 1000)
+    }
+  }
 
-  const iniciar = useCallback(() => {
-    detener()
-    intervalRef.current = setInterval(() => {
-      setTiempo(prev => {
-        if (prev <= 1) {
-          detener()
-
-          if (Notification.permission === 'granted' && !notifRef.current) {
-            notifRef.current = true
-            const msg = modo === 'trabajo' ? '¡Tiempo de descanso!' : '¡Tiempo de trabajar!'
-            new Notification('Taskway — Pomodoro', { body: msg })
-            setTimeout(() => { notifRef.current = false }, 1000)
-          }
-
-          if (modo === 'trabajo') {
-            setCiclos(c => {
-              const nuevo = c + 1
-              if (nuevo % 4 === 0) {
-                setModo('descansoLargo')
-                setTiempo(durations.descansoLargo)
-              } else {
-                setModo('descansoCorto')
-                setTiempo(durations.descansoCorto)
-              }
-              return nuevo
-            })
-          } else {
-            setModo('trabajo')
-            setTiempo(durations.trabajo)
-          }
-          return 0
-        }
-        return prev - 1
-      })
-    }, 1000)
-    setCorriendo(true)
-  }, [modo, detener, durations])
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') onClose() }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [onClose])
 
   const resetear = useCallback(() => {
-    detener()
+    setFinAt(null)
     setModo('trabajo')
     setTiempo(durations.trabajo)
     setCiclos(0)
     setTareaActiva(null)
-  }, [detener, durations])
+  }, [durations])
 
   const handleDurationChange = (key, minutes) => {
-    const segundos = Math.max(60, minutes * 60)
+    const segundos = Math.min(180, Math.max(1, minutes)) * 60
     const nuevas = { ...durations, [key]: segundos }
     setDurations(nuevas)
     saveJSON(STORAGE_KEYS.POMODORO, nuevas)
     if (key === modo) {
+      setFinAt(null)
       setTiempo(segundos)
-      detener()
     }
+  }
+
+  const completarTareaActiva = () => {
+    if (!tareaActiva) return
+    onToggle?.(tareaActiva)
+    setTareaActiva(null)
   }
 
   const minutos = Math.floor(tiempo / 60)
   const segundos = tiempo % 60
-  const total = durations[modo]
-  const progreso = total > 0 ? ((total - tiempo) / total) * 100 : 0
+  const total = durations[modo] || 1
+  const progreso = Math.min(100, ((total - tiempo) / total) * 100)
 
   const radio = 70
   const circunferencia = 2 * Math.PI * radio
   const offset = circunferencia - (progreso / 100) * circunferencia
-
-  const nombreModo = {
-    trabajo: 'Enfoque',
-    descansoCorto: 'Descanso',
-    descansoLargo: 'Descanso largo'
-  }[modo]
+  const acento = modo === 'trabajo' ? 'var(--color-teal)' : 'var(--color-purple)'
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={onClose}>
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in" />
       <div
-        className="relative w-[320px] rounded-2xl p-6 animate-scale-in border shadow-2xl"
+        className="relative w-full max-w-[320px] rounded-2xl p-6 animate-scale-in border shadow-2xl"
         style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}
         onClick={e => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Temporizador Pomodoro"
       >
-        {/* Close */}
-        <button onClick={onClose} className="absolute top-3 right-3 p-1" style={{ color: 'var(--color-muted)' }}>
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
+        <button onClick={onClose} className="absolute top-3 right-3 p-1" style={{ color: 'var(--color-muted)' }} aria-label="Cerrar">
+          <CloseIcon className="w-5 h-5" />
         </button>
 
-        {/* Modo */}
-        <p className="text-xs font-medium text-center mb-4 uppercase tracking-wider" style={{ color: 'var(--color-teal)' }}>
-          {nombreModo}
+        <p className="text-xs font-medium text-center mb-4 uppercase tracking-wider" style={{ color: acento }}>
+          {NOMBRE_MODO[modo]}
         </p>
 
-        {/* Tarea activa selector */}
         {modo === 'trabajo' && tareasPendientes.length > 0 && !editMode && (
-          <div className="mb-4">
+          <div className="mb-4 flex gap-2">
             <select
               value={tareaActiva || ''}
               onChange={e => setTareaActiva(e.target.value || null)}
-              className="w-full text-xs rounded-lg px-2 py-1.5 border"
-              style={{
-                backgroundColor: 'var(--color-fondo)',
-                borderColor: 'var(--color-border)',
-                color: 'var(--color-text)'
-              }}
+              className="flex-1 min-w-0 text-xs rounded-lg px-2 py-1.5 border"
+              style={{ backgroundColor: 'var(--color-fondo)', borderColor: 'var(--color-border)', color: 'var(--color-text)' }}
+              aria-label="Tarea en la que trabajar"
             >
               <option value="">Sin tarea específica</option>
               {tareasPendientes.map(t => (
                 <option key={t.id} value={t.id}>{t.titulo}</option>
               ))}
             </select>
+            {tareaActiva && (
+              <button
+                onClick={completarTareaActiva}
+                className="flex items-center gap-1 px-2.5 rounded-lg text-xs font-medium transition-all active:scale-95"
+                style={{ color: 'var(--color-teal)', backgroundColor: 'color-mix(in srgb, var(--color-teal) 12%, transparent)' }}
+                aria-label="Marcar la tarea como completada"
+              >
+                <CheckIcon className="w-3.5 h-3.5" />
+                Hecha
+              </button>
+            )}
           </div>
         )}
 
         {editMode ? (
           <>
-            {/* Edit mode: 3 inputs */}
             <div className="space-y-3 mb-4">
-              {[
-                { key: 'trabajo', label: 'Enfoque', defaultMin: 25 },
-                { key: 'descansoCorto', label: 'Descanso corto', defaultMin: 5 },
-                { key: 'descansoLargo', label: 'Descanso largo', defaultMin: 15 }
-              ].map(({ key, label, defaultMin }) => (
+              {CAMPOS_DURACION.map(({ key, label, defaultMin }) => (
                 <div key={key} className="flex items-center justify-between">
-                  <label className="text-sm" style={{ color: 'var(--color-text)' }}>{label}</label>
+                  <label htmlFor={`pomodoro-${key}`} className="text-sm" style={{ color: 'var(--color-text)' }}>{label}</label>
                   <div className="flex items-center gap-1">
                     <input
+                      id={`pomodoro-${key}`}
                       type="number"
                       min={1}
                       max={180}
                       value={Math.floor(durations[key] / 60)}
-                      onChange={e => handleDurationChange(key, parseInt(e.target.value) || defaultMin)}
+                      onChange={e => handleDurationChange(key, parseInt(e.target.value, 10) || defaultMin)}
                       className="w-16 text-center text-sm rounded-lg px-2 py-1.5 border"
-                      style={{
-                        backgroundColor: 'var(--color-fondo)',
-                        borderColor: 'var(--color-border)',
-                        color: 'var(--color-text)'
-                      }}
+                      style={{ backgroundColor: 'var(--color-fondo)', borderColor: 'var(--color-border)', color: 'var(--color-text)' }}
                     />
                     <span className="text-xs" style={{ color: 'var(--color-muted)' }}>min</span>
                   </div>
@@ -184,24 +199,19 @@ export default function PomodoroTimer({ onClose, tareasPendientes = [] }) {
           </>
         ) : (
           <>
-            {/* Timer circular SVG */}
             <div className="flex justify-center mb-4">
               <div className="relative w-[160px] h-[160px]">
-                <svg className="w-full h-full -rotate-90" viewBox="0 0 160 160">
-                  <circle cx="80" cy="80" r={radio} fill="none" strokeWidth="6"
-                    style={{ stroke: 'var(--color-border)' }} />
+                <svg className="w-full h-full -rotate-90" viewBox="0 0 160 160" aria-hidden="true">
+                  <circle cx="80" cy="80" r={radio} fill="none" strokeWidth="6" style={{ stroke: 'var(--color-border)' }} />
                   <circle cx="80" cy="80" r={radio} fill="none" strokeWidth="6"
                     strokeLinecap="round"
                     strokeDasharray={circunferencia}
                     strokeDashoffset={offset}
-                    style={{
-                      stroke: modo === 'trabajo' ? 'var(--color-teal)' : 'var(--color-purple)',
-                      transition: 'stroke-dashoffset 0.5s ease'
-                    }} />
+                    style={{ stroke: acento, transition: 'stroke-dashoffset 0.5s ease' }} />
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-3xl font-bold tabular-nums"
-                    style={{ color: 'var(--color-text)', fontVariantNumeric: 'tabular-nums' }}>
+                  <span className="text-3xl font-bold" style={{ color: 'var(--color-text)', fontVariantNumeric: 'tabular-nums' }}
+                    role="timer" aria-live="off">
                     {String(minutos).padStart(2, '0')}:{String(segundos).padStart(2, '0')}
                   </span>
                   <span className="text-[10px] mt-1" style={{ color: 'var(--color-muted)' }}>
@@ -211,12 +221,11 @@ export default function PomodoroTimer({ onClose, tareasPendientes = [] }) {
               </div>
             </div>
 
-            {/* Botones */}
             <div className="flex justify-center gap-3">
               <button
-                onClick={corriendo ? detener : iniciar}
+                onClick={alternarMarcha}
                 className="px-6 py-2 rounded-xl text-sm font-medium text-white transition-all active:scale-95"
-                style={{ backgroundColor: modo === 'trabajo' ? 'var(--color-teal)' : 'var(--color-purple)' }}
+                style={{ backgroundColor: acento }}
               >
                 {corriendo ? 'Pausa' : tiempo === 0 ? 'Reiniciar ciclo' : 'Iniciar'}
               </button>
@@ -232,11 +241,9 @@ export default function PomodoroTimer({ onClose, tareasPendientes = [] }) {
                 className="px-3 py-2 rounded-xl text-sm font-medium transition-all active:scale-95"
                 style={{ color: 'var(--color-muted)', backgroundColor: 'var(--color-fondo)' }}
                 title="Ajustar tiempos"
+                aria-label="Ajustar tiempos"
               >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="3" />
-                  <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.32 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" />
-                </svg>
+                <GearIcon className="w-4 h-4" />
               </button>
             </div>
           </>

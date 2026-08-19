@@ -40,7 +40,10 @@ export default defineConfig({
       },
       devOptions: {
         enabled: true,
-        type: 'module'
+        // public/sw.js usa importScripts(), que no existe en un worker de tipo
+        // module: registrarlo como module hacia fallar el registro en dev con
+        // un "Uncaught (in promise)" en cada carga.
+        type: 'classic'
       }
     })
   ]

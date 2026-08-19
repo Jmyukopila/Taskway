@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { hoy, diasSemana } from '../lib/dates'
 import Modal from './ui/Modal'
 import { uid } from '../lib/id'
+import { PlusIcon, RecurringIcon, CloseIcon } from '../config/icons'
 
 const DIAS = diasSemana()
 
@@ -109,15 +110,18 @@ export default function AddTaskModal({ onClose, onAdd, task }) {
               onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addSubtask())}
             />
             <button type="button" onClick={addSubtask}
-              className="px-3 py-2 rounded-lg text-xs font-medium text-white"
-              style={{ backgroundColor: 'var(--color-teal)' }}>
-              +
+              className="px-3 py-2 rounded-lg text-white flex items-center justify-center"
+              style={{ backgroundColor: 'var(--color-teal)' }}
+              aria-label="Agregar subtarea">
+              <PlusIcon className="w-3.5 h-3.5" />
             </button>
           </div>
           {subtasks.map(s => (
             <div key={s.id} className="flex items-center gap-2 py-1">
               <span className="text-xs flex-1" style={{ color: 'var(--color-text)' }}>{s.titulo}</span>
-              <button type="button" onClick={() => removeSubtask(s.id)} className="text-xs" style={{ color: 'var(--color-muted)' }}>x</button>
+              <button type="button" onClick={() => removeSubtask(s.id)} className="p-1" style={{ color: 'var(--color-muted)' }} aria-label={`Quitar ${s.titulo}`}>
+                <CloseIcon className="w-3 h-3" />
+              </button>
             </div>
           ))}
         </div>
@@ -127,9 +131,7 @@ export default function AddTaskModal({ onClose, onAdd, task }) {
           <button type="button" onClick={() => setShowHora(!showHora)}
             className="flex items-center gap-2 text-xs font-medium transition-colors"
             style={{ color: showHora ? 'var(--color-danger)' : 'var(--color-teal)' }}>
-            <svg className={`w-4 h-4 transition-transform ${showHora ? 'rotate-45' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-            </svg>
+            <PlusIcon className={`w-4 h-4 transition-transform ${showHora ? 'rotate-45' : ''}`} />
             {showHora ? 'Quitar hora' : 'Agregar hora'}
           </button>
           {showHora && (
@@ -145,9 +147,7 @@ export default function AddTaskModal({ onClose, onAdd, task }) {
           <button type="button" onClick={() => setShowRecurrencia(!showRecurrencia)}
             className="flex items-center gap-2 text-xs font-medium"
             style={{ color: showRecurrencia ? 'var(--color-danger)' : 'var(--color-teal)' }}>
-            <svg className={`w-4 h-4 transition-transform ${showRecurrencia ? 'rotate-45' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
+            <RecurringIcon className="w-4 h-4" />
             {showRecurrencia ? 'Quitar recurrencia' : 'Tarea recurrente'}
           </button>
           {showRecurrencia && (

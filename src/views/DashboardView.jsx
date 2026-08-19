@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import useDashboardData from '../hooks/useDashboardData'
 import TimeSeriesChart from '../components/TimeSeriesChart'
+import { StreakIcon, CheckIcon, DashboardIcon, HabitosIcon, TareasIcon, EmptyIcon } from '../config/icons'
 
 const RANGOS = [
   { key: 7, label: '7 días' },
@@ -15,7 +16,7 @@ export default function DashboardView({ tasks, habits }) {
   const data = useDashboardData(tasks, habits, rango)
 
   return (
-    <div className="flex-1 px-4 pt-4 pb-4 overflow-y-auto">
+    <div className="flex-1 px-4 pt-4 pb-8 overflow-y-auto">
       {/* Time filter */}
       <div className="flex gap-1.5 mb-5 overflow-x-auto pb-1">
         {RANGOS.map(r => (
@@ -31,23 +32,16 @@ export default function DashboardView({ tasks, habits }) {
         ))}
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-5 gap-2 mb-5">
-        <KpiCard label="Racha actual" value={data.rachaActual} icon={
-          <SvgIcon viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" /></SvgIcon>
-        } />
-        <KpiCard label="Completadas" value={data.completadasEnRango} icon={
-          <SvgIcon viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" /></SvgIcon>
-        } />
-        <KpiCard label="Tasa éxito" value={`${data.tasaExito}%`} icon={
-          <SvgIcon viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6" /></SvgIcon>
-        } />
-        <KpiCard label="Prom. diario" value={data.promedioDiario} icon={
-          <SvgIcon viewBox="0 0 24 24"><path d="M12 20V10M18 20V4M6 20v-4" /><path d="M2 20h20" /></SvgIcon>
-        } />
-        <KpiCard label="Pendientes" value={data.pendientesEnRango} icon={
-          <SvgIcon viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M9 12h6M12 9v6" /></SvgIcon>
-        } />
+      {/* KPIs: en 480px, cinco columnas dejaban 80px por tarjeta y las etiquetas
+          se partian en tres lineas; 3 + 2 respira y se lee de un vistazo. */}
+      <div className="grid grid-cols-3 gap-2 mb-2">
+        <KpiCard label="Racha actual" value={data.rachaActual} icon={<StreakIcon className="w-full h-full" />} />
+        <KpiCard label="Completadas" value={data.completadasEnRango} icon={<CheckIcon className="w-full h-full" />} />
+        <KpiCard label="Tasa de exito" value={`${data.tasaExito}%`} icon={<DashboardIcon className="w-full h-full" />} />
+      </div>
+      <div className="grid grid-cols-2 gap-2 mb-5">
+        <KpiCard label="Promedio diario" value={data.promedioDiario} icon={<HabitosIcon className="w-full h-full" />} />
+        <KpiCard label="Pendientes" value={data.pendientesEnRango} icon={<TareasIcon className="w-full h-full" />} />
       </div>
 
       {/* Evolución tareas */}
@@ -72,27 +66,26 @@ export default function DashboardView({ tasks, habits }) {
       <Section title="Más métricas">
         <div className="space-y-2.5">
           <MetricRow label="Día más productivo" value={data.diaMasProductivo} />
-          <MetricRow label="Racha máxima histórica" value={`${data.rachaMax} días`} />
+          <MetricRow label="Racha máxima histórica" value={`${data.rachaMax} ${data.rachaMax === 1 ? 'día' : 'días'}`} />
           <MetricRow label="Total completadas (histórico)" value={data.totalHistorico} />
-          <MetricRow label="Tasa global de éxito" value={`${data.tasaExito}%`} />
+          <MetricRow label="Tasa global de éxito" value={`${data.tasaGlobal}%`} />
           <MetricRow label="Hábito con mejor racha" value={data.mejorHabito !== '-' ? `${data.mejorHabito} (${data.rachaMejorHabito}d)` : '-'} />
           <MetricRow label="Días sin completar" value={`${data.diasSinCompletar} en el período`} />
 
           <div className="pt-1">
             <p className="text-[11px] font-medium mb-1.5" style={{ color: 'var(--color-muted)' }}>Tareas por prioridad</p>
+            {/* Mismos colores que los badges de prioridad de las tareas */}
             <div className="flex gap-3">
-              <div className="flex items-center gap-1.5 text-xs" style={{ color: 'var(--color-text)' }}>
-                <span className="w-2.5 h-2.5 rounded-full bg-red-500" />
-                Alta {data.tasksPorPrioridad.alta}
-              </div>
-              <div className="flex items-center gap-1.5 text-xs" style={{ color: 'var(--color-text)' }}>
-                <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: '#F59E0B' }} />
-                Media {data.tasksPorPrioridad.media}
-              </div>
-              <div className="flex items-center gap-1.5 text-xs" style={{ color: 'var(--color-text)' }}>
-                <span className="w-2.5 h-2.5 rounded-full bg-green-500" />
-                Baja {data.tasksPorPrioridad.baja}
-              </div>
+              {[
+                { label: 'Alta', valor: data.tasksPorPrioridad.alta, color: 'var(--color-purple)' },
+                { label: 'Media', valor: data.tasksPorPrioridad.media, color: 'var(--color-teal)' },
+                { label: 'Baja', valor: data.tasksPorPrioridad.baja, color: 'var(--color-muted)' }
+              ].map(p => (
+                <div key={p.label} className="flex items-center gap-1.5 text-xs" style={{ color: 'var(--color-text)' }}>
+                  <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: p.color }} />
+                  {p.label} {p.valor}
+                </div>
+              ))}
             </div>
           </div>
 
@@ -105,7 +98,7 @@ export default function DashboardView({ tasks, habits }) {
                   <div key={h.nombre} className="flex items-center gap-2 text-xs" style={{ color: 'var(--color-text)' }}>
                     <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: h.color }} />
                     <span className="flex-1">{h.nombre}</span>
-                    <span className="font-mono" style={{ color: 'var(--color-muted)' }}>{h.racha} días</span>
+                    <span className="font-mono" style={{ color: 'var(--color-muted)' }}>{h.racha} {h.racha === 1 ? 'día' : 'días'}</span>
                   </div>
                 ))}
               </div>
@@ -119,19 +112,11 @@ export default function DashboardView({ tasks, habits }) {
 
 function KpiCard({ label, value, icon }) {
   return (
-    <div className="rounded-xl p-2.5 text-center border" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
-      <div className="w-5 h-5 mx-auto mb-0.5" style={{ color: 'var(--color-teal)' }}>{icon}</div>
-      <div className="text-base font-bold" style={{ color: 'var(--color-text)' }}>{value}</div>
-      <div className="text-[9px] font-medium leading-tight mt-0.5" style={{ color: 'var(--color-muted)' }}>{label}</div>
+    <div className="rounded-xl p-3 text-center border" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
+      <div className="w-5 h-5 mx-auto mb-1" style={{ color: 'var(--color-teal)' }}>{icon}</div>
+      <div className="text-lg font-bold leading-none" style={{ color: 'var(--color-text)' }}>{value}</div>
+      <div className="text-[10px] font-medium leading-tight mt-1" style={{ color: 'var(--color-muted)' }}>{label}</div>
     </div>
-  )
-}
-
-function SvgIcon({ viewBox, children }) {
-  return (
-    <svg viewBox={viewBox} className="w-full h-full" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-      {children}
-    </svg>
   )
 }
 
@@ -159,7 +144,8 @@ function MetricRow({ label, value }) {
 
 function EmptyChart() {
   return (
-    <div className="flex items-center justify-center py-8 text-xs" style={{ color: 'var(--color-muted)' }}>
+    <div className="flex flex-col items-center justify-center py-8 text-xs gap-2" style={{ color: 'var(--color-muted)' }}>
+      <EmptyIcon className="w-8 h-8" style={{ opacity: 0.6 }} />
       Sin datos en este período
     </div>
   )

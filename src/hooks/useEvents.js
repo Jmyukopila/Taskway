@@ -2,8 +2,8 @@ import { useState, useEffect, useCallback } from 'react'
 import { STORAGE_KEYS } from '../config/constants'
 import { loadJSON, saveJSON } from '../lib/storage'
 import { uid } from '../lib/id'
-import { hoy } from '../lib/dates'
-import { pedirPermiso, enviarNotificacion } from '../utils/pushNotifications'
+import { hoy, aFecha } from '../lib/dates'
+import { permisoConcedido, enviarNotificacion } from '../utils/pushNotifications'
 
 const NOTIFIED_KEY = 'taskway-event-notified'
 
@@ -33,10 +33,10 @@ function checkEventNotifications(events) {
     }
 
     if (ev.recordatorioDias) {
-      const eventDate = new Date(ev.fecha + 'T00:00:00')
+      const eventDate = new Date(ev.fecha + 'T12:00:00')
       const remindDate = new Date(eventDate)
       remindDate.setDate(remindDate.getDate() - ev.recordatorioDias)
-      const remindStr = remindDate.toISOString().slice(0, 10)
+      const remindStr = aFecha(remindDate)
       if (remindStr === today) {
         if (!yaNotificado(ev.id, 'event-reminder')) {
           const label = ev.recordatorioDias === 1 ? 'mañana' :
@@ -56,9 +56,7 @@ export default function useEvents() {
   useEffect(() => { saveJSON(STORAGE_KEYS.EVENTS, events) }, [events])
 
   useEffect(() => {
-    pedirPermiso().then(granted => {
-      if (granted) checkEventNotifications(events)
-    })
+    if (permisoConcedido()) checkEventNotifications(events)
 
     const handleVisibility = () => {
       if (document.visibilityState === 'visible') {

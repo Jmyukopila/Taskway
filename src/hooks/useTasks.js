@@ -3,13 +3,15 @@ import { STORAGE_KEYS } from '../config/constants'
 import { loadJSON, saveJSON } from '../lib/storage'
 import { uid } from '../lib/id'
 import { generarProximaFechaRecurrente, hoy } from '../lib/dates'
-import { pedirPermiso, enviarNotificacion, enviarNotificacionDesdeSW, suscribirPush, playAlarm } from '../utils/pushNotifications'
+import { permisoConcedido, enviarNotificacion, enviarNotificacionDesdeSW, suscribirPush, playAlarm } from '../utils/pushNotifications'
 
 const PENDING_KEY = 'taskway-pending-notifs'
 const notifTimeouts = new Map()
 
 function guardarPendiente(tarea, timestamp) {
-  const pendientes = loadJSON(PENDING_KEY, [])
+  // Reemplaza por id: el efecto reprograma en cada cambio de tareas y, si se
+  // acumulasen duplicados, al recuperar se dispararia una notificacion por copia.
+  const pendientes = loadJSON(PENDING_KEY, []).filter(p => p.id !== tarea.id)
   pendientes.push({ id: tarea.id, title: tarea.titulo, time: tarea.hora, fecha: tarea.fecha, timestamp })
   saveJSON(PENDING_KEY, pendientes)
 }
@@ -79,12 +81,12 @@ export default function useTasks() {
   useEffect(() => { localStorage.setItem(STORAGE_KEYS.ALARM_ENABLED, alarmEnabled) }, [alarmEnabled])
 
   useEffect(() => {
-    pedirPermiso().then(granted => {
-      if (granted) {
-        suscribirPush()
-        recuperarPendientes()
-      }
-    })
+    // No se pide permiso al cargar: el navegador lo rechaza fuera de un gesto
+    // del usuario. Se solicita desde Configuracion.
+    if (permisoConcedido()) {
+      suscribirPush()
+      recuperarPendientes()
+    }
 
     const handleVisibility = () => {
       if (document.visibilityState === 'visible') {
@@ -96,18 +98,22 @@ export default function useTasks() {
     const handleSWMessage = (event) => {
       if (event.data?.type === 'play-alarm') playAlarm()
     }
-    navigator.serviceWorker.addEventListener('message', handleSWMessage)
+    const sw = 'serviceWorker' in navigator ? navigator.serviceWorker : null
+    sw?.addEventListener('message', handleSWMessage)
 
     return () => {
       document.removeEventListener('visibilitychange', handleVisibility)
-      navigator.serviceWorker.removeEventListener('message', handleSWMessage)
+      sw?.removeEventListener('message', handleSWMessage)
     }
   }, [])
 
   useEffect(() => {
     tasks.forEach(t => programarNotif(t))
     return () => {
-      for (const [id] of notifTimeouts) cancelarNotif(id)
+      // Solo se limpian los temporizadores en memoria: la lista persistida es
+      // la que permite recuperar avisos vencidos tras cerrar la app.
+      for (const id of notifTimeouts.values()) clearTimeout(id)
+      notifTimeouts.clear()
     }
   }, [tasks])
 
@@ -150,7 +156,7 @@ export default function useTasks() {
               fecha: proxFecha,
               hora: t.hora,
               prioridad: t.prioridad,
-              subtasks: t.subtasks.map(s => ({ ...s, completada: false })),
+              subtasks: (t.subtasks || []).map(s => ({ ...s, completada: false })),
               recurrencia: t.recurrencia,
               createdAt: hoy()
             }
@@ -175,7 +181,7 @@ export default function useTasks() {
       if (t.id !== taskId) return t
       return {
         ...t,
-        subtasks: t.subtasks.map(s =>
+        subtasks: (t.subtasks || []).map(s =>
           s.id === subtaskId ? { ...s, completada: !s.completada } : s
         )
       }

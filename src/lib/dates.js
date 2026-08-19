@@ -1,8 +1,24 @@
 const DIAS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado']
 const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
 
+/**
+ * Fecha local en formato YYYY-MM-DD.
+ * No usar toISOString(): convierte a UTC y en husos negativos adelanta el dia
+ * por la tarde (una tarea creada "hoy" a las 19:00 caeria en manana).
+ */
+export function aFecha(d = new Date()) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
 export function hoy() {
-  return new Date().toISOString().split('T')[0]
+  return aFecha()
+}
+
+/** Suma dias a una fecha YYYY-MM-DD y devuelve otra fecha YYYY-MM-DD. */
+export function sumarDias(dateStr, dias) {
+  const d = new Date(dateStr + 'T12:00:00')
+  d.setDate(d.getDate() + dias)
+  return aFecha(d)
 }
 
 export function diaSemana(dateStr) {
@@ -103,14 +119,14 @@ export function generarProximaFechaRecurrente(fecha, recurrencia) {
       return null
   }
 
-  return d.toISOString().split('T')[0]
+  return aFecha(d)
 }
 
 export function semanaKey(dateStr) {
   const d = new Date(dateStr + 'T12:00:00')
   const inicio = new Date(d)
   inicio.setDate(d.getDate() - d.getDay())
-  return inicio.toISOString().split('T')[0]
+  return aFecha(inicio)
 }
 
 export function fechaLocal(dateStr) {

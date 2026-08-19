@@ -1,14 +1,15 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTheme } from '../contexts/ThemeContext'
 import { TEMAS } from '../config/themes'
 
 import {
   TemaDefaultIcon, TemaSepiaIcon, TemaOceanIcon, TemaMinimalIcon,
   EstiloClasicoIcon, EstiloAceroIcon, EstiloFloraIcon,
-  SunIcon, MoonIcon, CloseIcon, CheckIcon,
+  SunIcon, MoonIcon, CloseIcon, CheckIcon, BellIcon, DownloadIcon, UploadIcon,
   HoyIcon, CalendarioIcon, HabitosIcon, HorarioIcon, TareasIcon
 } from '../config/icons'
 import { exportarDatos, importarDatos } from '../lib/dataManager'
+import { pedirPermiso } from '../utils/pushNotifications'
 
 const THEME_ICONS = {
   temaDefault: TemaDefaultIcon,
@@ -29,6 +30,20 @@ export default function SettingsView({ onClose, alarmEnabled, setAlarmEnabled })
   const { theme, setTema, setFamilia, setVariante, toggleModo, temasDisponibles, familias } = useTheme()
   const fileRef = useRef(null)
   const [importStatus, setImportStatus] = useState(null)
+  const [permisoNotif, setPermisoNotif] = useState(
+    () => ('Notification' in window ? Notification.permission : 'unsupported')
+  )
+
+  const solicitarNotificaciones = async () => {
+    const ok = await pedirPermiso()
+    setPermisoNotif(ok ? 'granted' : ('Notification' in window ? Notification.permission : 'unsupported'))
+  }
+
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') onClose() }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [onClose])
 
   const familiaActual = familias.find(f => f.key === (theme.familia || 'clasico'))
   const varianteActual = theme.variante
@@ -54,11 +69,14 @@ export default function SettingsView({ onClose, alarmEnabled, setAlarmEnabled })
         className="relative w-full max-w-[480px] mx-auto rounded-t-2xl animate-slide-up max-h-[85vh] overflow-y-auto"
         style={{ backgroundColor: 'var(--color-card)' }}
         onClick={e => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Configuracion"
       >
         {/* Header */}
         <div className="sticky top-0 z-10 flex items-center justify-between px-5 py-4" style={{ backgroundColor: 'var(--color-card)' }}>
           <h2 className="text-base font-bold" style={{ color: 'var(--color-text)' }}>Configuracion</h2>
-          <button onClick={onClose} className="p-2 rounded-xl transition-colors" style={{ color: 'var(--color-muted)' }}>
+          <button onClick={onClose} className="p-2 rounded-xl transition-colors" style={{ color: 'var(--color-muted)' }} aria-label="Cerrar configuracion">
             <CloseIcon className="w-5 h-5" />
           </button>
         </div>
@@ -82,6 +100,7 @@ export default function SettingsView({ onClose, alarmEnabled, setAlarmEnabled })
                   <button
                     key={t.key}
                     onClick={() => setTema(t.key)}
+                    aria-pressed={activo}
                     className="relative rounded-xl p-4 text-left transition-all active:scale-95 border"
                     style={{
                       backgroundColor: 'var(--color-fondo)',
@@ -117,6 +136,8 @@ export default function SettingsView({ onClose, alarmEnabled, setAlarmEnabled })
                   <button
                     key={fam.key}
                     onClick={() => setFamilia(fam.key)}
+                    aria-pressed={activo}
+                    title={fam.desc}
                     className="relative rounded-xl p-3 text-center transition-all active:scale-95 border"
                     style={{
                       backgroundColor: 'var(--color-fondo)',
@@ -146,6 +167,8 @@ export default function SettingsView({ onClose, alarmEnabled, setAlarmEnabled })
                       <button
                         key={v.key}
                         onClick={() => setVariante(v.key)}
+                        aria-pressed={activo}
+                        title={v.desc}
                         className="relative rounded-xl p-2.5 text-center transition-all active:scale-95 border text-xs"
                         style={{
                           backgroundColor: 'var(--color-fondo)',
@@ -189,6 +212,8 @@ export default function SettingsView({ onClose, alarmEnabled, setAlarmEnabled })
             <div className="space-y-2">
               <button
                 onClick={toggleModo}
+                role="switch"
+                aria-checked={theme.modo === 'dark'}
                 className="w-full flex items-center justify-between px-4 py-3 rounded-xl border transition-colors"
                 style={{
                   backgroundColor: 'var(--color-fondo)',
@@ -211,8 +236,33 @@ export default function SettingsView({ onClose, alarmEnabled, setAlarmEnabled })
                 </div>
               </button>
 
+              {permisoNotif !== 'unsupported' && (
+                <button
+                  onClick={permisoNotif === 'default' ? solicitarNotificaciones : undefined}
+                  disabled={permisoNotif !== 'default'}
+                  className="w-full flex items-center justify-between px-4 py-3 rounded-xl border transition-colors text-left"
+                  style={{
+                    backgroundColor: 'var(--color-fondo)',
+                    borderColor: permisoNotif === 'denied' ? 'var(--color-danger)' : 'var(--color-border)',
+                    color: 'var(--color-text)'
+                  }}
+                >
+                  <div className="flex items-center gap-3">
+                    <BellIcon className="w-5 h-5" />
+                    <span className="text-sm">
+                      {permisoNotif === 'granted' ? 'Notificaciones activadas'
+                        : permisoNotif === 'denied' ? 'Notificaciones bloqueadas por el navegador'
+                        : 'Activar notificaciones'}
+                    </span>
+                  </div>
+                  {permisoNotif === 'granted' && <CheckIcon className="w-4 h-4" style={{ color: 'var(--color-teal)' }} />}
+                </button>
+              )}
+
               <button
                 onClick={() => setAlarmEnabled(!alarmEnabled)}
+                role="switch"
+                aria-checked={alarmEnabled}
                 className="w-full flex items-center justify-between px-4 py-3 rounded-xl border transition-colors"
                 style={{
                   backgroundColor: 'var(--color-fondo)',
@@ -221,11 +271,7 @@ export default function SettingsView({ onClose, alarmEnabled, setAlarmEnabled })
                 }}
               >
                 <div className="flex items-center gap-3">
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M15 17a5 5 0 001-5 5 5 0 00-10 0 5 5 0 001 5" />
-                    <path d="M11 21h2" />
-                    <path d="M20 11a8 8 0 10-16 0" />
-                  </svg>
+                  <BellIcon className="w-5 h-5" />
                   <span className="text-sm">Alarma sonora en notificaciones</span>
                 </div>
                 <div
@@ -248,9 +294,7 @@ export default function SettingsView({ onClose, alarmEnabled, setAlarmEnabled })
                   color: 'var(--color-text)'
                 }}
               >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" />
-                </svg>
+                <DownloadIcon className="w-5 h-5" />
                 <span>Exportar datos</span>
               </button>
 
@@ -264,9 +308,7 @@ export default function SettingsView({ onClose, alarmEnabled, setAlarmEnabled })
                     color: 'var(--color-text)'
                   }}
                 >
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" />
-                  </svg>
+                  <UploadIcon className="w-5 h-5" />
                   <span>{importStatus === 'ok' ? 'Datos importados. Recargando...' : importStatus === 'error' ? 'Error al importar' : 'Importar datos'}</span>
                 </button>
                 <input ref={fileRef} type="file" accept=".json" onChange={handleImport} className="hidden" />

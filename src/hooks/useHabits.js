@@ -4,8 +4,18 @@ import { loadJSON, saveJSON } from '../lib/storage'
 import { uid } from '../lib/id'
 import { hoy } from '../lib/dates'
 
+/**
+ * Versiones antiguas guardaban las marcas en "completations" (typo). Al leer se
+ * fusionan las dos claves y se deja solo "completions": si conviven, cualquier
+ * lectura que prefiera la vieja ignora lo que se acaba de marcar.
+ */
+function normalizar(habito) {
+  const { completations, completions, ...resto } = habito
+  return { ...resto, completions: { ...completations, ...completions } }
+}
+
 export default function useHabits() {
-  const [habits, setHabits] = useState(() => loadJSON(STORAGE_KEYS.HABITS, []))
+  const [habits, setHabits] = useState(() => loadJSON(STORAGE_KEYS.HABITS, []).map(normalizar))
 
   useEffect(() => { saveJSON(STORAGE_KEYS.HABITS, habits) }, [habits])
 
@@ -25,12 +35,9 @@ export default function useHabits() {
     const today = hoy()
     setHabits(prev => prev.map(h => {
       if (h.id !== id) return h
-      const completions = { ...h.completations || h.completions }
-      if (completions[today]) {
-        delete completions[today]
-      } else {
-        completions[today] = true
-      }
+      const completions = { ...h.completions }
+      if (completions[today]) delete completions[today]
+      else completions[today] = true
       return { ...h, completions }
     }))
   }, [])

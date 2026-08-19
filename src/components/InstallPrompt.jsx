@@ -1,4 +1,5 @@
 import { usePWA } from '../contexts/PWAContext'
+import { PlusIcon } from '../config/icons'
 
 export default function InstallPrompt() {
   const { installPrompt, isInstalled, platform, manualGuide, handleInstall, dismissInstall, dismissManualGuide } = usePWA()
@@ -10,9 +11,7 @@ export default function InstallPrompt() {
       <div className="fixed bottom-24 left-4 right-4 z-50 max-w-[480px] mx-auto animate-slide-up">
         <div className="rounded-xl p-4 flex items-center gap-3 shadow-2xl border" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
           <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'var(--color-teal)' }}>
-            <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-            </svg>
+            <PlusIcon className="w-5 h-5" style={{ color: '#fff' }} />
           </div>
           <div className="flex-1">
             <p className="text-sm font-medium" style={{ color: 'var(--color-text)' }}>Instalar Taskway</p>
@@ -45,9 +44,7 @@ export default function InstallPrompt() {
         <div className="rounded-xl p-4 shadow-2xl border" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
           <div className="flex items-center gap-3 mb-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'var(--color-teal)' }}>
-              <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-              </svg>
+              <PlusIcon className="w-5 h-5" style={{ color: '#fff' }} />
             </div>
             <div>
               <p className="text-sm font-medium" style={{ color: 'var(--color-text)' }}>Instalar Taskway en Android</p>

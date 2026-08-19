@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
-// no date utils needed
+import { aFecha } from '../lib/dates'
+import { calcularRacha } from '../lib/streaks'
 
 const DIAS_ABR = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
 const MESES_ABR = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
@@ -12,7 +13,7 @@ function fechaInicioRango(rango) {
 }
 
 function fechaToStr(fecha) {
-  return fecha.toISOString().slice(0, 10)
+  return aFecha(fecha)
 }
 
 function generarDias(rango) {
@@ -143,13 +144,13 @@ export default function useDashboardData(tasks, habits, rango) {
       let count = 0
       if (rango === 'all') {
         habits.forEach(h => {
-          Object.keys(h.completions || h.completations || {}).forEach(f => {
+          Object.keys(h.completions || {}).forEach(f => {
             if (f.startsWith(d)) count++
           })
         })
       } else {
         habits.forEach(h => {
-          const comps = h.completions || h.completations || {}
+          const comps = h.completions || {}
           if (comps[d]) count++
         })
       }
@@ -161,29 +162,18 @@ export default function useDashboardData(tasks, habits, rango) {
     }))
 
     // === Racha actual (días consecutivos con al menos 1 completación de tarea o hábito) ===
-    let rachaActual = 0
-    for (let i = 0; i < 365; i++) {
-      const d = new Date()
-      d.setDate(d.getDate() - i)
-      const str = fechaToStr(d)
-      const algunaTask = completadas.some(t => t.completadaEn === str)
-      let algunHabito = false
-      habits.forEach(h => {
-        const comps = h.completions || h.completations || {}
-        if (comps[str]) algunHabito = true
-      })
-      if (algunaTask || algunHabito) {
-        rachaActual++
-      } else {
-        break
-      }
-    }
+    // Mismo criterio que la racha de cada habito (lib/streaks): si hoy aun no
+    // hay nada, se mide hasta ayer.
+    const rachaActual = calcularRacha(fecha =>
+      completadas.some(t => t.completadaEn === fecha) ||
+      habits.some(h => !!(h.completions || {})[fecha])
+    )
 
     // === Racha máxima ===
     const fechasCompletadas = new Set()
     completadas.forEach(t => { if (t.completadaEn) fechasCompletadas.add(t.completadaEn) })
     habits.forEach(h => {
-      const comps = h.completions || h.completations || {}
+      const comps = h.completions || {}
       Object.keys(comps).forEach(f => fechasCompletadas.add(f))
     })
 
@@ -218,33 +208,15 @@ export default function useDashboardData(tasks, habits, rango) {
     })
 
     // === Hábito con mejor racha ===
-    let mejorHabito = { nombre: '-', racha: 0 }
-    habits.forEach(h => {
-      const comps = h.completions || h.completations || {}
-      let cont = 0
-      for (let i = 0; i < 365; i++) {
-        const d = new Date()
-        d.setDate(d.getDate() - i)
-        const str = fechaToStr(d)
-        if (comps[str]) cont++
-        else break
-      }
-      if (cont > mejorHabito.racha) mejorHabito = { nombre: h.nombre, racha: cont }
+    const rachaPorHabit = habits.map(h => {
+      const comps = h.completions || {}
+      return { nombre: h.nombre, racha: calcularRacha(fecha => !!comps[fecha]), color: h.color }
     })
 
-    // === Rachas por hábito ===
-    const rachaPorHabit = habits.map(h => {
-      const comps = h.completions || h.completations || {}
-      let cont = 0
-      for (let i = 0; i < 365; i++) {
-        const d = new Date()
-        d.setDate(d.getDate() - i)
-        const str = fechaToStr(d)
-        if (comps[str]) cont++
-        else break
-      }
-      return { nombre: h.nombre, racha: cont, color: h.color }
-    })
+    const mejorHabito = rachaPorHabit.reduce(
+      (mejor, h) => (h.racha > mejor.racha ? { nombre: h.nombre, racha: h.racha } : mejor),
+      { nombre: '-', racha: 0 }
+    )
 
     // === Tasks por prioridad ===
     const tasksPorPrioridad = {
@@ -263,7 +235,7 @@ export default function useDashboardData(tasks, habits, rango) {
         const alguna = completadas.some(t => t.completadaEn === str)
         let algunHab = false
         habits.forEach(h => {
-          const comps = h.completions || h.completations || {}
+          const comps = h.completions || {}
           if (comps[str]) algunHab = true
         })
         if (!alguna && !algunHab) diasSinCompletar++
@@ -271,6 +243,9 @@ export default function useDashboardData(tasks, habits, rango) {
     }
 
     // === Rango label ===
+    const totalHistorico = tasks.filter(t => t.completada).length
+    const tasaGlobal = tasks.length > 0 ? Math.round((totalHistorico / tasks.length) * 100) : 0
+
     const rangoLabel = rango === 7 ? '7 días' : rango === 30 ? '30 días' : rango === 90 ? '90 días' : rango === 365 ? 'este año' : 'todo'
 
     return {
@@ -278,8 +253,9 @@ export default function useDashboardData(tasks, habits, rango) {
       rachaMax,
       totalCompletadas,
       totalPendientes,
-      totalHistorico: tasks.filter(t => t.completada).length,
+      totalHistorico,
       tasaExito,
+      tasaGlobal,
       promedioDiario: parseFloat(promedioDiario),
       diaMasProductivo,
       mejorHabito: mejorHabito.nombre,

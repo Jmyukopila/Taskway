@@ -19,9 +19,13 @@ export default function AddClassModal({ onClose, onAdd, clase }) {
     setDiasSemana(prev => prev.includes(dia) ? prev.filter(d => d !== dia) : [...prev, dia])
   }
 
+  // La rejilla asume fin > inicio: si no, el bloque se dibuja con altura minima
+  // en la fila equivocada.
+  const horasValidas = horaFin > horaInicio
+
   const handleSubmit = (e) => {
     e.preventDefault()
-    if (!materia.trim() || diasSemana.length === 0) return
+    if (!materia.trim() || diasSemana.length === 0 || !horasValidas) return
     onAdd({
       tipo: 'clase',
       materia: materia.trim(),
@@ -102,13 +106,21 @@ export default function AddClassModal({ onClose, onAdd, clase }) {
           <div className="flex gap-2">
             {COLORES.map(c => (
               <button key={c} type="button" onClick={() => setColor(c)}
-                className={`w-8 h-8 rounded-full transition-all ${color === c ? 'ring-2 ring-offset-2 scale-110' : 'hover:scale-110'}`}
-                style={{ backgroundColor: c, '--tw-ring-color': '#fff', '--tw-ring-offset-color': 'var(--color-card)' }} />
+                className="w-8 h-8 rounded-full transition-all"
+                style={{ backgroundColor: c, outline: color === c ? `2px solid ${c}` : 'none', outlineOffset: '3px' }}
+                aria-label={`Color ${c}`}
+                aria-pressed={color === c} />
             ))}
           </div>
         </div>
 
-        <button type="submit" disabled={!materia.trim() || diasSemana.length === 0}
+        {!horasValidas && (
+          <p className="text-xs" style={{ color: 'var(--color-danger)' }}>
+            La hora de fin debe ser posterior a la de inicio.
+          </p>
+        )}
+
+        <button type="submit" disabled={!materia.trim() || diasSemana.length === 0 || !horasValidas}
           className="w-full text-white font-medium py-2.5 rounded-lg transition-all text-sm disabled:opacity-40"
           style={{ backgroundColor: 'var(--color-teal)' }}>
           {esEdicion ? 'Guardar cambios' : 'Crear clase'}

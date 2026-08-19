@@ -37,7 +37,8 @@ export default function TimeSeriesChart({ data, height = 160, color = 'var(--col
 
       <path d={linePath} fill="none" stroke={color} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
 
-      {points.map((p, i) => (
+      {/* Con rangos largos los puntos se solapan y emborronan la linea */}
+      {points.length <= 31 && points.map((p, i) => (
         <circle key={i} cx={p.x} cy={p.y} r="3" fill={color} stroke="var(--color-card)" strokeWidth="1.5" />
       ))}
 

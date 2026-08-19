@@ -76,10 +76,11 @@ body {
   margin: 0;
   padding: 0;
   min-height: 100dvh;
-  background: var(--color-fondo);
   -webkit-font-smoothing: antialiased;
 }
 
+/* El safe-area lo aplican la cabecera y la barra inferior. Aplicarlo tambien
+   aqui duplicaba el margen en dispositivos con notch. */
 #root {
   max-width: 480px;
   margin: 0 auto;
@@ -87,14 +88,44 @@ body {
   position: relative;
   display: flex;
   flex-direction: column;
-  padding-top: env(safe-area-inset-top, 0px);
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Fondo de los paquetes de temas: las capas las compone lib/fondos.js a partir
+   de una especificacion ya validada. Sin paquete activo, --fondo-imagen es
+   "none" y esto equivale al color plano de siempre. */
+body, #root {
+  background-color: var(--color-fondo);
+  background-image: var(--fondo-imagen, none);
+  background-size: var(--fondo-tamano, auto);
+  background-position: var(--fondo-posicion, 0 0);
+  background-repeat: var(--fondo-repeticion, no-repeat);
+  background-attachment: fixed;
+}
+
+/* Foco visible con teclado (los botones solo tenian estados de hover/tap) */
+:focus-visible {
+  outline: 2px solid var(--color-teal);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Area tactil minima en los controles solo-icono */
+button {
+  touch-action: manipulation;
 }
 
 /* Scrollbar */
 ::-webkit-scrollbar { width: 4px }
 ::-webkit-scrollbar-track { background: transparent }
 ::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 2px }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
 
 /* Animaciones */
 @keyframes fadeInUp {
@@ -128,6 +159,10 @@ input, textarea, select {
 input:focus, textarea:focus, select:focus {
   border-color: var(--color-teal);
   outline: none;
+}
+input:focus-visible, textarea:focus-visible, select:focus-visible {
+  outline: 2px solid var(--color-teal);
+  outline-offset: 1px;
 }
 input::placeholder, textarea::placeholder {
   color: var(--color-muted);

@@ -1,11 +1,27 @@
+import { STORAGE_KEYS } from '../config/constants'
+
 const VAPID_PUBLIC_KEY = 'BLgWkKhcCfQq3uM59Jd2zlcBAZPDpnzA_gE8YfslyEuKk9pWvnv_jNqBJOiRlPEBciQekCHDo6-LsT4ZpO1SdeE'
 
+/** Estado actual sin pedir nada al usuario. */
+export function permisoConcedido() {
+  return 'Notification' in window && Notification.permission === 'granted'
+}
+
+/**
+ * Pide permiso de notificaciones. Debe llamarse desde una accion del usuario:
+ * fuera de un gesto, Chrome rechaza la promesa, y sin este try/catch eso subia
+ * como "Uncaught (in promise)" en consola.
+ */
 export async function pedirPermiso() {
   if (!('Notification' in window)) return false
   if (Notification.permission === 'granted') return true
   if (Notification.permission === 'denied') return false
-  const result = await Notification.requestPermission()
-  return result === 'granted'
+  try {
+    const result = await Notification.requestPermission()
+    return result === 'granted'
+  } catch {
+    return false
+  }
 }
 
 export function enviarNotificacion(titulo, cuerpo, tag) {
@@ -54,7 +70,7 @@ export async function enviarNotificacionDesdeSW({ title, body, tag, delay }) {
 let audioCtx = null
 
 export function playAlarm() {
-  if (localStorage.getItem('mi-dia-alarm-enabled') === 'false') return
+  if (localStorage.getItem(STORAGE_KEYS.ALARM_ENABLED) === 'false') return
   try {
     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)()
     const now = audioCtx.currentTime
