@@ -114,8 +114,9 @@ export default function App() {
           onClose={() => setSettingsOpen(false)}
           alarmEnabled={alarmEnabled}
           setAlarmEnabled={setAlarmEnabled}
-          onVerNovedades={() => { setSettingsOpen(false); novedades.abrirHistorial() }}
+          onVerNovedades={novedades.abrirHistorial}
           version={novedades.version}
+          escapeInhibido={novedades.abierto}
         />
       )}
 

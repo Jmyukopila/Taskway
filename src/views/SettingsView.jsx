@@ -5,7 +5,7 @@ import { TEMAS } from '../config/themes'
 import {
   TemaDefaultIcon, TemaSepiaIcon, TemaOceanIcon, TemaMinimalIcon,
   EstiloClasicoIcon, EstiloAceroIcon, EstiloFloraIcon,
-  SunIcon, MoonIcon, CloseIcon, CheckIcon, BellIcon, DownloadIcon, UploadIcon, StreakIcon,
+  SunIcon, MoonIcon, CloseIcon, CheckIcon, BellIcon, DownloadIcon, UploadIcon, StreakIcon, ChevronRightIcon,
   HoyIcon, CalendarioIcon, HabitosIcon, HorarioIcon, TareasIcon
 } from '../config/icons'
 import { exportarDatos, importarDatos } from '../lib/dataManager'
@@ -27,7 +27,7 @@ const FAMILIA_ICONS = {
 
 const PREVIEW_ICONS = [HoyIcon, CalendarioIcon, HabitosIcon, HorarioIcon, TareasIcon]
 
-export default function SettingsView({ onClose, alarmEnabled, setAlarmEnabled, onVerNovedades, version }) {
+export default function SettingsView({ onClose, alarmEnabled, setAlarmEnabled, onVerNovedades, version, escapeInhibido }) {
   const { theme, setTema, setFamilia, setVariante, toggleModo, temasDisponibles, familias, packActivo } = useTheme()
   const fileRef = useRef(null)
   const [importStatus, setImportStatus] = useState(null)
@@ -41,10 +41,12 @@ export default function SettingsView({ onClose, alarmEnabled, setAlarmEnabled, o
   }
 
   useEffect(() => {
+    // Con las novedades abiertas encima, Escape cierra solo esa ventana.
+    if (escapeInhibido) return
     const onKey = (e) => { if (e.key === 'Escape') onClose() }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
-  }, [onClose])
+  }, [onClose, escapeInhibido])
 
   const familiaActual = familias.find(f => f.key === (theme.familia || 'clasico'))
   const varianteActual = theme.variante
@@ -322,22 +324,33 @@ export default function SettingsView({ onClose, alarmEnabled, setAlarmEnabled, o
                 <input ref={fileRef} type="file" accept=".json" onChange={handleImport} className="hidden" />
               </div>
 
-              <button
-                onClick={onVerNovedades}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border transition-colors text-sm"
-                style={{
-                  backgroundColor: 'var(--color-fondo)',
-                  borderColor: 'var(--color-border)',
-                  color: 'var(--color-text)'
-                }}
-              >
-                <StreakIcon className="w-5 h-5" />
-                <span>Novedades</span>
-                {version && (
-                  <span className="ml-auto text-[11px]" style={{ color: 'var(--color-muted)' }}>v{version}</span>
-                )}
-              </button>
             </div>
+          </section>
+
+          {/* === ACERCA DE === */}
+          <section>
+            <h3 className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--color-muted)' }}>Acerca de</h3>
+            <button
+              onClick={onVerNovedades}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border transition-colors text-sm"
+              style={{
+                backgroundColor: 'var(--color-fondo)',
+                borderColor: 'var(--color-border)',
+                color: 'var(--color-text)'
+              }}
+            >
+              <StreakIcon className="w-5 h-5" style={{ color: 'var(--color-teal)' }} />
+              <div className="flex-1 text-left">
+                <span>Novedades</span>
+                <p className="text-[11px]" style={{ color: 'var(--color-muted)' }}>
+                  Todo lo que ha cambiado, version a version
+                </p>
+              </div>
+              <ChevronRightIcon className="w-4 h-4" style={{ color: 'var(--color-muted)' }} />
+            </button>
+            <p className="text-[11px] text-center mt-2" style={{ color: 'var(--color-muted)' }}>
+              Taskway v{version}
+            </p>
           </section>
         </div>
       </div>
