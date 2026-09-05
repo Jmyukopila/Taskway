@@ -11,7 +11,7 @@ const SUBVISTAS = [
 
 export default function AcademicoView({
   tasks, habits, classes, notas,
-  onAddTask, onToggle, onDeleteTask, toggleSubtask, onUpdateTask
+  onAddClass, onAddTask, onToggle, onDeleteTask, toggleSubtask, onUpdateTask
 }) {
   const [sub, setSub] = useState('tareas')
 
@@ -47,6 +47,7 @@ export default function AcademicoView({
           <AcademicoTareas
             tasks={tasks}
             classes={classes}
+            onAddClass={onAddClass}
             onAddTask={onAddTask}
             onToggle={onToggle}
             onDeleteTask={onDeleteTask}
@@ -54,7 +55,7 @@ export default function AcademicoView({
             onUpdateTask={onUpdateTask}
           />
         )}
-        {sub === 'notas' && <NotasView tasks={tasks} classes={classes} notas={notas} />}
+        {sub === 'notas' && <NotasView tasks={tasks} classes={classes} notas={notas} onAddClass={onAddClass} />}
         {sub === 'resumen' && <DashboardView tasks={tasks} habits={habits} />}
       </div>
     </div>

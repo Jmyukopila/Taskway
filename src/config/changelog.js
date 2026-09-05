@@ -14,6 +14,17 @@
 
 export const CAMBIOS = [
   {
+    version: '1.2.1',
+    fecha: '2026-09-05',
+    titulo: 'Académico sincronizado con el Horario',
+    cambios: [
+      { tipo: 'mejorado', texto: 'Académico gira sobre las materias del Horario: una materia aunque tengas varias clases de ella, con una sola tarjeta de notas y un solo grupo de tareas.' },
+      { tipo: 'mejorado', texto: 'Renombrar o borrar una materia en el Horario arrastra sus tareas y sus notas. Al borrarla, las tareas conservan la materia como texto.' },
+      { tipo: 'nuevo', texto: 'La pestaña Tareas de Académico lista todas tus materias, aunque no tengan tareas, con un botón para añadirles una directamente.' },
+      { tipo: 'nuevo', texto: 'Puedes crear una materia en el Horario sin salir de Académico.' }
+    ]
+  },
+  {
     version: '1.2.0',
     fecha: '2026-09-05',
     titulo: 'Sección académica: materias, tareas y notas',

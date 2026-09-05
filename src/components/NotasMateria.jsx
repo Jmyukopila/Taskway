@@ -6,14 +6,13 @@ import { formatFechaCorta } from '../lib/dates'
 
 const fmt = (n) => n == null ? '—' : n.toLocaleString('es', { maximumFractionDigits: 2 })
 
-export default function NotasMateria({ clase, materia, tasks, acciones }) {
-  const claseId = clase.id
+export default function NotasMateria({ nombre, color, notasMateria, tasks, classes, acciones }) {
   const [abierto, setAbierto] = useState(false)
   const [modal, setModal] = useState(null) // { corteId, item? }
 
   const resumen = useMemo(
-    () => resumenMateria(materia, tasks, claseId),
-    [materia, tasks, claseId]
+    () => resumenMateria(notasMateria, tasks, nombre, classes),
+    [notasMateria, tasks, nombre, classes]
   )
   const { cortes, pesoTotal, definitivaProyectada, definitivaActual, notasTareas } = resumen
   const pesoDescuadrado = cortes.length > 0 && Math.abs(pesoTotal - 100) > 0.01
@@ -25,9 +24,9 @@ export default function NotasMateria({ clase, materia, tasks, acciones }) {
         aria-expanded={abierto}
         className="w-full flex items-center gap-3 p-3 text-left"
       >
-        <span className="w-1.5 h-9 rounded-full flex-shrink-0" style={{ backgroundColor: clase.color }} />
+        <span className="w-1.5 h-9 rounded-full flex-shrink-0" style={{ backgroundColor: color || 'var(--color-muted)' }} />
         <span className="flex-1 min-w-0">
-          <span className="block text-sm font-medium truncate" style={{ color: 'var(--color-text)' }}>{clase.materia}</span>
+          <span className="block text-sm font-medium truncate" style={{ color: 'var(--color-text)' }}>{nombre}</span>
           <span className="block text-[11px]" style={{ color: 'var(--color-text-secondary)' }}>
             {cortes.length === 0 ? 'Sin cortes' : `${cortes.length} ${cortes.length === 1 ? 'corte' : 'cortes'}`}
             {notasTareas.items.length > 0 && ` · ${notasTareas.items.length} de tareas`}
@@ -49,14 +48,14 @@ export default function NotasMateria({ clase, materia, tasks, acciones }) {
               </p>
               <div className="flex gap-2 flex-wrap">
                 <button
-                  onClick={() => acciones.usarPlantilla(claseId)}
+                  onClick={() => acciones.usarPlantilla(nombre)}
                   className="text-xs font-medium px-3 py-1.5 rounded-lg text-white"
                   style={{ backgroundColor: 'var(--color-teal)' }}
                 >
                   Plantilla 30 / 30 / 40
                 </button>
                 <button
-                  onClick={() => acciones.addCorte(claseId)}
+                  onClick={() => acciones.addCorte(nombre)}
                   className="text-xs font-medium px-3 py-1.5 rounded-lg border"
                   style={{ borderColor: 'var(--color-border)', color: 'var(--color-text)' }}
                 >
@@ -71,19 +70,19 @@ export default function NotasMateria({ clase, materia, tasks, acciones }) {
                   <CorteBloque
                     key={corte.id}
                     corte={corte}
-                    onNombre={(nombre) => acciones.updateCorte(claseId, corte.id, { nombre })}
-                    onPeso={(peso) => acciones.updateCorte(claseId, corte.id, { peso })}
-                    onEliminar={() => acciones.deleteCorte(claseId, corte.id)}
+                    onNombre={(nuevo) => acciones.updateCorte(nombre, corte.id, { nombre: nuevo })}
+                    onPeso={(peso) => acciones.updateCorte(nombre, corte.id, { peso })}
+                    onEliminar={() => acciones.deleteCorte(nombre, corte.id)}
                     onNuevoItem={() => setModal({ corteId: corte.id })}
                     onEditarItem={(item) => setModal({ corteId: corte.id, item })}
-                    onEliminarItem={(itemId) => acciones.deleteItem(claseId, corte.id, itemId)}
+                    onEliminarItem={(itemId) => acciones.deleteItem(nombre, corte.id, itemId)}
                   />
                 ))}
               </div>
 
               <div className="flex items-center justify-between gap-2 flex-wrap">
                 <button
-                  onClick={() => acciones.addCorte(claseId)}
+                  onClick={() => acciones.addCorte(nombre)}
                   className="flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg border"
                   style={{ borderColor: 'var(--color-border)', color: 'var(--color-text)' }}
                 >
@@ -135,8 +134,8 @@ export default function NotasMateria({ clase, materia, tasks, acciones }) {
           corteNombre={cortes.find(c => c.id === modal.corteId)?.nombre}
           onClose={() => setModal(null)}
           onGuardar={(datos) => {
-            if (modal.item) acciones.updateItem(claseId, modal.corteId, modal.item.id, datos)
-            else acciones.addItem(claseId, modal.corteId, datos)
+            if (modal.item) acciones.updateItem(nombre, modal.corteId, modal.item.id, datos)
+            else acciones.addItem(nombre, modal.corteId, datos)
           }}
         />
       )}

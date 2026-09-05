@@ -1,4 +1,5 @@
-import { normalizarCalificacion } from './academico.js'
+import { normalizarCalificacion, getMateriaTarea } from './academico.js'
+import { normalizarMateria } from './materias.js'
 
 /* ==========================================================================
    Notas por materia: cortes con peso, items dentro de cada corte y la
@@ -85,14 +86,14 @@ export function validarNota(valor) {
 }
 
 /**
- * Notas sacadas de las tareas de una materia (identificada por su clase del
- * horario). Solo lectura: se listan para tenerlas a la vista, no se mezclan con
- * los cortes.
+ * Notas sacadas de las tareas de una materia (por nombre). Solo lectura: se
+ * listan para tenerlas a la vista, no se mezclan con los cortes.
  */
-export function notasDeTareas(tasks = [], claseId) {
-  if (!claseId) return { items: [], promedio: null }
+export function notasDeTareas(tasks = [], nombreMateria, clases = []) {
+  const objetivo = normalizarMateria(nombreMateria)
+  if (!objetivo) return { items: [], promedio: null }
   const items = tasks
-    .filter(t => t.claseId === claseId && t.calificacion != null)
+    .filter(t => t.calificacion != null && getMateriaTarea(t, clases) === objetivo)
     .map(t => ({ id: t.id, nombre: t.titulo, nota: t.calificacion, fecha: t.fecha || null }))
     .sort((a, b) => (b.fecha || '').localeCompare(a.fecha || ''))
   const promedio = items.length
@@ -101,14 +102,41 @@ export function notasDeTareas(tasks = [], claseId) {
   return { items, promedio }
 }
 
+/**
+ * Renombra una materia dentro del diccionario de notas. Si el destino ya tiene
+ * notas, se juntan los cortes de ambas. Devuelve un diccionario nuevo.
+ */
+export function renombrarEnNotas(notas = {}, viejo, nuevo) {
+  const v = normalizarMateria(viejo)
+  const n = normalizarMateria(nuevo)
+  if (!v || !n || v === n || !notas[v]) return notas
+  const salida = {}
+  for (const [clave, valor] of Object.entries(notas)) {
+    if (clave === v) continue
+    salida[clave] = valor
+  }
+  const cortesViejos = notas[v].cortes || []
+  salida[n] = salida[n]
+    ? { ...salida[n], cortes: [...(salida[n].cortes || []), ...cortesViejos] }
+    : notas[v]
+  return salida
+}
+
+/** Quita una materia del diccionario de notas. Devuelve un diccionario nuevo. */
+export function quitarDeNotas(notas = {}, nombre) {
+  const clave = normalizarMateria(nombre)
+  if (!clave || !notas[clave]) return notas
+  return Object.fromEntries(Object.entries(notas).filter(([k]) => k !== clave))
+}
+
 /** Todo lo que necesita la tarjeta de una materia, en una sola pasada. */
-export function resumenMateria(materia, tasks, claseId) {
+export function resumenMateria(materia, tasks, nombreMateria, clases = []) {
   const cortes = materia?.cortes || []
   return {
     cortes: cortes.map(c => ({ ...c, nota: notaCorte(c) })),
     pesoTotal: pesoTotal(cortes),
     definitivaProyectada: definitivaProyectada(cortes),
     definitivaActual: definitivaActual(cortes),
-    notasTareas: notasDeTareas(tasks, claseId)
+    notasTareas: notasDeTareas(tasks, nombreMateria, clases)
   }
 }

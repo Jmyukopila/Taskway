@@ -2,7 +2,8 @@ import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import {
   promedioPonderado, notaCorte, definitivaProyectada, definitivaActual,
-  pesoTotal, validarPeso, validarNota, notasDeTareas, resumenMateria, PLANTILLA_CORTES
+  pesoTotal, validarPeso, validarNota, notasDeTareas, resumenMateria, PLANTILLA_CORTES,
+  renombrarEnNotas, quitarDeNotas
 } from '../src/lib/notas.js'
 
 test('la plantilla de cortes suma 100', () => {
@@ -72,24 +73,25 @@ test('validarNota reutiliza la escala 0-5 de las tareas', () => {
   assert.throws(() => validarNota('6'), /0.*5/)
 })
 
-test('notasDeTareas toma solo las tareas calificadas de esa clase, sin mezclar otras', () => {
+test('notasDeTareas toma solo las tareas calificadas de esa materia (por nombre), sin mezclar otras', () => {
+  const clases = [{ id: 'fis1', materia: 'Fisica' }, { id: 'fis2', materia: 'Fisica' }, { id: 'mate1', materia: 'Calculo' }]
   const tasks = [
-    { id: 'a', claseId: 'fis', titulo: 'Lab 1', calificacion: 4.5, fecha: '2026-03-01' },
-    { id: 'b', claseId: 'fis', titulo: 'Lab 2', calificacion: 3.5, fecha: '2026-04-01' },
-    { id: 'c', claseId: 'fis', titulo: 'Sin nota', calificacion: null, fecha: '2026-05-01' },
-    { id: 'd', claseId: 'mate', titulo: 'Otra materia', calificacion: 5, fecha: '2026-03-01' }
+    { id: 'a', materia: 'Fisica', titulo: 'Lab 1', calificacion: 4.5, fecha: '2026-03-01' },
+    { id: 'b', claseId: 'fis2', titulo: 'Lab 2', calificacion: 3.5, fecha: '2026-04-01' }, // ligada a otra sesion de la misma materia
+    { id: 'c', materia: 'Fisica', titulo: 'Sin nota', calificacion: null, fecha: '2026-05-01' },
+    { id: 'd', materia: 'Calculo', titulo: 'Otra materia', calificacion: 5, fecha: '2026-03-01' }
   ]
-  const { items, promedio } = notasDeTareas(tasks, 'fis')
-  assert.deepEqual(items.map(i => i.id), ['b', 'a']) // mas reciente primero
+  const { items, promedio } = notasDeTareas(tasks, 'Fisica', clases)
+  assert.deepEqual(items.map(i => i.id), ['b', 'a']) // mas reciente primero, y las dos sesiones cuentan como una materia
   assert.equal(promedio, 4)
-  assert.deepEqual(notasDeTareas(tasks, null), { items: [], promedio: null })
-  assert.deepEqual(notasDeTareas(tasks, 'sin-tareas'), { items: [], promedio: null })
+  assert.deepEqual(notasDeTareas(tasks, null, clases), { items: [], promedio: null })
+  assert.deepEqual(notasDeTareas(tasks, 'Ingles', clases), { items: [], promedio: null })
 })
 
 test('resumenMateria junta cortes, definitiva y notas de tareas en una pasada', () => {
   const materia = { cortes: cortesEjemplo }
-  const tasks = [{ id: 'a', claseId: 'fis', titulo: 'Taller', calificacion: 5, fecha: '2026-03-01' }]
-  const r = resumenMateria(materia, tasks, 'fis')
+  const tasks = [{ id: 'a', materia: 'Fisica', titulo: 'Taller', calificacion: 5, fecha: '2026-03-01' }]
+  const r = resumenMateria(materia, tasks, 'Fisica')
   assert.equal(r.cortes[0].nota, 3.7)
   assert.equal(r.cortes[2].nota, null)
   assert.equal(r.pesoTotal, 100)
@@ -99,8 +101,31 @@ test('resumenMateria junta cortes, definitiva y notas de tareas en una pasada', 
   assert.equal(r.notasTareas.items.length, 1)
 })
 
+test('renombrarEnNotas mueve la entrada y no toca el original', () => {
+  const notas = { 'Calculo I': { cortes: [{ id: 'a' }] }, 'Fisica': { cortes: [{ id: 'b' }] } }
+  const r = renombrarEnNotas(notas, 'Calculo I', 'Calculo Diferencial')
+  assert.deepEqual(Object.keys(r).sort(), ['Calculo Diferencial', 'Fisica'])
+  assert.deepEqual(r['Calculo Diferencial'].cortes, [{ id: 'a' }])
+  assert.ok(notas['Calculo I']) // sin mutar
+  // renombrar hacia una materia que ya tiene notas: se juntan los cortes
+  const fusion = renombrarEnNotas(notas, 'Calculo I', 'Fisica')
+  assert.deepEqual(fusion['Fisica'].cortes.map(c => c.id), ['b', 'a'])
+  // casos que no hacen nada
+  assert.equal(renombrarEnNotas(notas, 'Calculo I', 'Calculo I'), notas)
+  assert.equal(renombrarEnNotas(notas, 'Inexistente', 'X'), notas)
+  assert.equal(renombrarEnNotas(notas, 'Calculo I', '  '), notas)
+})
+
+test('quitarDeNotas elimina la entrada sin mutar el original', () => {
+  const notas = { 'Calculo I': { cortes: [] }, 'Fisica': { cortes: [] } }
+  assert.deepEqual(Object.keys(quitarDeNotas(notas, 'Calculo I')), ['Fisica'])
+  assert.deepEqual(Object.keys(quitarDeNotas(notas, '  Fisica  ')), ['Calculo I'])
+  assert.equal(quitarDeNotas(notas, 'Inexistente'), notas)
+  assert.ok(notas['Calculo I'])
+})
+
 test('resumenMateria aguanta una materia sin datos', () => {
-  const r = resumenMateria(undefined, [], 'fis')
+  const r = resumenMateria(undefined, [], 'Fisica')
   assert.deepEqual(r.cortes, [])
   assert.equal(r.definitivaProyectada, null)
   assert.equal(r.definitivaActual, null)

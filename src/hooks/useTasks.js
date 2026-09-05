@@ -183,6 +183,39 @@ export default function useTasks() {
     setTasks(prev => prev.map(t => t.id === id ? { ...t, ...actualizacion } : t))
   }, [])
 
+  /** Renombrar una materia en el horario: las tareas ligadas a ella (por nombre)
+      pasan al nombre nuevo. */
+  const renombrarMateria = useCallback((viejo, nuevo) => {
+    const v = (viejo || '').trim()
+    const n = (nuevo || '').trim()
+    if (!v || !n || v === n) return
+    setTasks(prev => {
+      let cambio = false
+      const siguiente = prev.map(t => {
+        if ((t.materia || '').trim() !== v) return t
+        cambio = true
+        return { ...t, materia: n }
+      })
+      return cambio ? siguiente : prev
+    })
+  }, [])
+
+  /** Borrar una clase del horario: sus tareas antiguas pierden el claseId pero
+      conservan la materia como texto. */
+  const desvincularClase = useCallback((claseId) => {
+    setTasks(prev => {
+      let cambio = false
+      const siguiente = prev.map(t => {
+        if (t.claseId !== claseId) return t
+        cambio = true
+        const copia = { ...t }
+        delete copia.claseId
+        return copia
+      })
+      return cambio ? siguiente : prev
+    })
+  }, [])
+
   const toggleSubtask = useCallback((taskId, subtaskId) => {
     setTasks(prev => prev.map(t => {
       if (t.id !== taskId) return t
@@ -195,5 +228,5 @@ export default function useTasks() {
     }))
   }, [])
 
-  return { tasks, addTask, toggleTask, deleteTask, updateTask, toggleSubtask, alarmEnabled, setAlarmEnabled }
+  return { tasks, addTask, toggleTask, deleteTask, updateTask, toggleSubtask, renombrarMateria, desvincularClase, alarmEnabled, setAlarmEnabled }
 }

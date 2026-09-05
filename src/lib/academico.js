@@ -1,3 +1,5 @@
+import { normalizarMateria } from './materias.js'
+
 export function normalizarCalificacion(valor) {
   if (valor == null || (typeof valor === 'string' && !valor.trim())) return null
   const texto = typeof valor === 'string' ? valor.trim() : null
@@ -9,9 +11,17 @@ export function normalizarCalificacion(valor) {
   return numero
 }
 
+/**
+ * Nombre de la materia de una tarea. Si sigue ligada a una clase del horario
+ * (tareas antiguas), gana el nombre vigente de esa clase, asi un cambio en el
+ * horario se refleja sin tocar la tarea. Si no, el nombre guardado en la tarea.
+ */
 export function getMateriaTarea(tarea, clases = []) {
-  const clase = clases.find(c => c.id === tarea.claseId)
-  return clase?.materia || (typeof tarea.materia === 'string' ? tarea.materia : '')
+  if (tarea.claseId) {
+    const clase = clases.find(c => c.id === tarea.claseId)
+    if (clase) return normalizarMateria(clase.materia)
+  }
+  return normalizarMateria(tarea.materia)
 }
 
 export function formatearCalificacion(valor) {
@@ -23,11 +33,14 @@ export function formatearCalificacion(valor) {
   }
 }
 
+/**
+ * Campos academicos de una tarea. La materia es un nombre que debe coincidir
+ * con una del horario; se guarda tal cual (normalizado). Las tareas nuevas ya
+ * no llevan claseId: el vinculo es por nombre.
+ */
 export function getDatosAcademicos(datos, recurrente = false) {
-  const claseId = typeof datos.claseId === 'string' && datos.claseId ? datos.claseId : null
   return {
-    claseId,
-    materia: claseId && typeof datos.materia === 'string' ? datos.materia.trim() : '',
+    materia: normalizarMateria(datos.materia),
     calificacion: recurrente ? null : normalizarCalificacion(datos.calificacion)
   }
 }

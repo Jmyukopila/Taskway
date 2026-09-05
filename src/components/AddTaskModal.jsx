@@ -3,11 +3,12 @@ import { hoy, diasSemana } from '../lib/dates'
 import Modal from './ui/Modal'
 import { uid } from '../lib/id'
 import { normalizarCalificacion } from '../lib/academico'
+import { nombresMaterias, normalizarMateria } from '../lib/materias'
 import { PlusIcon, RecurringIcon, CloseIcon } from '../config/icons'
 
 const DIAS = diasSemana()
 
-export default function AddTaskModal({ onClose, onAdd, task, classes = [] }) {
+export default function AddTaskModal({ onClose, onAdd, task, classes = [], materiaInicial = '' }) {
   const esEdicion = !!task
   const materiaId = useId()
   const calificacionId = useId()
@@ -23,40 +24,16 @@ export default function AddTaskModal({ onClose, onAdd, task, classes = [] }) {
   const [recurDias, setRecurDias] = useState(task?.recurrencia?.diasSemana || [])
   const [subtaskInput, setSubtaskInput] = useState('')
   const [subtasks, setSubtasks] = useState(task?.subtasks || [])
-  const [claseId, setClaseId] = useState(task?.claseId ?? null)
-  const [materia, setMateria] = useState(task?.materia || '')
+  const materiasHorario = nombresMaterias(classes)
+  const [materia, setMateria] = useState(() =>
+    normalizarMateria(esEdicion ? task?.materia : (task?.materia || materiaInicial))
+  )
+  const materiaFuera = !!materia && !materiasHorario.includes(materia)
   const [calificacionInput, setCalificacionInput] = useState(
     task?.calificacion === null || task?.calificacion === undefined ? '' : String(task.calificacion).replace('.', ',')
   )
   const [calificacionError, setCalificacionError] = useState('')
   const calificacionRef = useRef(null)
-
-  const materiaCounts = classes.reduce((acc, c) => { acc[c.materia] = (acc[c.materia] || 0) + 1; return acc }, Object.create(null))
-  const claseOpciones = classes.map(c => ({
-    id: c.id,
-    label: materiaCounts[c.materia] > 1
-      ? `${c.materia} (${c.profesor?.trim() ? c.profesor.trim() : `${c.horaInicio}-${c.horaFin}`})`
-      : c.materia
-  }))
-  if (task?.claseId && !classes.some(c => c.id === task.claseId)) {
-    claseOpciones.push({ id: task.claseId, label: `${task.materia || 'Materia'} (fuera del horario)` })
-  }
-
-  const handleClaseChange = (e) => {
-    const value = e.target.value
-    if (!value) {
-      setClaseId(null)
-      setMateria('')
-      return
-    }
-    setClaseId(value)
-    const clase = classes.find(c => c.id === value)
-    if (clase) {
-      setMateria(clase.materia)
-    } else if (task?.claseId === value) {
-      setMateria(task.materia || '')
-    }
-  }
 
   const toggleRecurDia = (dia) => {
     setRecurDias(prev => prev.includes(dia) ? prev.filter(d => d !== dia) : [...prev, dia])
@@ -99,8 +76,7 @@ export default function AddTaskModal({ onClose, onAdd, task, classes = [] }) {
       prioridad,
       subtasks,
       recurrencia,
-      claseId,
-      materia: classes.find(c => c.id === claseId)?.materia || materia,
+      materia,
       calificacion
     })
     onClose()
@@ -152,16 +128,17 @@ export default function AddTaskModal({ onClose, onAdd, task, classes = [] }) {
         <div className="space-y-3">
           <div className="min-w-0">
             <label htmlFor={materiaId} className="block text-xs font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>Materia</label>
-            <select id={materiaId} value={claseId ?? ''} onChange={handleClaseChange}
+            <select id={materiaId} value={materia} onChange={e => setMateria(e.target.value)}
               className="w-full rounded-lg px-3 py-2.5 text-sm"
               style={{ backgroundColor: 'var(--color-fondo)', borderColor: 'var(--color-border)', color: 'var(--color-text)' }}
             >
               <option value="">Sin materia</option>
-              {claseOpciones.map(o => (
-                <option key={o.id} value={o.id}>{o.label}</option>
+              {materiasHorario.map(m => (
+                <option key={m} value={m}>{m}</option>
               ))}
+              {materiaFuera && <option value={materia}>{materia} (fuera del horario)</option>}
             </select>
-            {classes.length === 0 && (
+            {materiasHorario.length === 0 && (
               <p className="text-xs mt-1" style={{ color: 'var(--color-text-secondary)' }}>
                 Agrega tus materias en Horario para poder seleccionarlas.
               </p>

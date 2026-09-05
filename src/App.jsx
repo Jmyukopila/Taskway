@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 
 import useTasks from './hooks/useTasks'
 import useClasses from './hooks/useClasses'
@@ -20,25 +20,51 @@ import InstallPrompt from './components/InstallPrompt'
 import NovedadesModal from './components/NovedadesModal'
 import useNovedades from './hooks/useNovedades'
 import { hoy } from './lib/dates'
+import { normalizarMateria } from './lib/materias'
 
 export default function App() {
   const [vista, setVista] = useState('today')
   const [pomodoroOpen, setPomodoroOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
 
-  const { tasks, addTask, toggleTask, deleteTask, toggleSubtask, updateTask, alarmEnabled, setAlarmEnabled } = useTasks()
+  const { tasks, addTask, toggleTask, deleteTask, toggleSubtask, updateTask, renombrarMateria: renombrarMateriaTareas, desvincularClase, alarmEnabled, setAlarmEnabled } = useTasks()
   const { classes, addClass, deleteClass, updateClass } = useClasses()
   const { habits, addHabit, toggleHabit, deleteHabit, updateHabit } = useHabits()
   const { events, addEvent, deleteEvent } = useEvents()
   const notas = useNotas()
   const novedades = useNovedades()
 
-  // Las notas se guardan por clase del horario: al borrar una clase, se descarta
-  // su entrada para que no quede colgada en los datos ni en la copia de seguridad.
-  const { prune: pruneNotas } = notas
-  useEffect(() => {
-    pruneNotas(classes.map(c => c.id))
-  }, [classes, pruneNotas])
+  const { renombrarMateria: renombrarMateriaNotas, eliminarMateria: eliminarMateriaNotas } = notas
+
+  // El area Academico razona por materia (nombre), no por sesion de clase. Al
+  // editar el horario hay que arrastrar notas y tareas: renombrar una clase que
+  // es la unica de su materia renombra todo; borrar la ultima clase de una
+  // materia se lleva sus notas y desvincula sus tareas (que conservan el nombre).
+  const handleUpdateClass = useCallback((id, cambios) => {
+    const anterior = classes.find(c => c.id === id)
+    updateClass(id, cambios)
+    if (!anterior || !Object.hasOwn(cambios, 'materia')) return
+    const viejo = normalizarMateria(anterior.materia)
+    const nuevo = normalizarMateria(cambios.materia)
+    if (!nuevo || viejo === nuevo) return
+    const quedanOtras = classes.some(c => c.id !== id && normalizarMateria(c.materia) === viejo)
+    if (!quedanOtras) {
+      renombrarMateriaNotas(viejo, nuevo)
+      renombrarMateriaTareas(viejo, nuevo)
+    }
+  }, [classes, updateClass, renombrarMateriaNotas, renombrarMateriaTareas])
+
+  const handleDeleteClass = useCallback((id) => {
+    const clase = classes.find(c => c.id === id)
+    deleteClass(id)
+    if (!clase) return
+    const nombre = normalizarMateria(clase.materia)
+    const quedanOtras = classes.some(c => c.id !== id && normalizarMateria(c.materia) === nombre)
+    if (!quedanOtras) {
+      eliminarMateriaNotas(nombre)
+      desvincularClase(id)
+    }
+  }, [classes, deleteClass, eliminarMateriaNotas, desvincularClase])
 
   const handleToggleTask = useCallback((id) => toggleTask(id), [toggleTask])
 
@@ -56,9 +82,9 @@ export default function App() {
       case 'habits':
         return <HabitsView habits={habits} onAdd={addHabit} onToggle={toggleHabit} onDelete={deleteHabit} onUpdateHabit={updateHabit} />
       case 'schedule':
-        return <ScheduleView classes={classes} onAddClass={addClass} onDeleteClass={deleteClass} onUpdateClass={updateClass} />
+        return <ScheduleView classes={classes} onAddClass={addClass} onDeleteClass={handleDeleteClass} onUpdateClass={handleUpdateClass} />
       case 'academico':
-        return <AcademicoView tasks={tasks} habits={habits} classes={classes} notas={notas} onAddTask={addTask} onToggle={handleToggleTask} onDeleteTask={deleteTask} toggleSubtask={toggleSubtask} onUpdateTask={updateTask} />
+        return <AcademicoView tasks={tasks} habits={habits} classes={classes} notas={notas} onAddClass={addClass} onAddTask={addTask} onToggle={handleToggleTask} onDeleteTask={deleteTask} toggleSubtask={toggleSubtask} onUpdateTask={updateTask} />
       case 'tasks':
         return <TasksView tasks={tasks} classes={classes} onAddTask={addTask} onToggle={handleToggleTask} onDeleteTask={deleteTask} toggleSubtask={toggleSubtask} onUpdateTask={updateTask} />
       default:
