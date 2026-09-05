@@ -4,6 +4,7 @@ import { loadJSON, saveJSON } from '../lib/storage'
 import { uid } from '../lib/id'
 import { generarProximaFechaRecurrente, hoy } from '../lib/dates'
 import { getDatosAcademicos, normalizarCalificacion } from '../lib/academico'
+import { aplicarImportacion } from '../lib/savioImport'
 import { permisoConcedido, enviarNotificacion, enviarNotificacionDesdeSW, suscribirPush, playAlarm } from '../utils/pushNotifications'
 
 const PENDING_KEY = 'taskway-pending-notifs'
@@ -200,6 +201,12 @@ export default function useTasks() {
     })
   }, [])
 
+  /** Importa (o actualiza la fecha de) las tareas que vienen del calendario de
+      SAVIO. Nunca toca una tarea ya completada ni la que el usuario editó. */
+  const importarSavio = useCallback((drafts) => {
+    setTasks(prev => aplicarImportacion(prev, drafts))
+  }, [])
+
   /** Borrar una clase del horario: sus tareas antiguas pierden el claseId pero
       conservan la materia como texto. */
   const desvincularClase = useCallback((claseId) => {
@@ -228,5 +235,5 @@ export default function useTasks() {
     }))
   }, [])
 
-  return { tasks, addTask, toggleTask, deleteTask, updateTask, toggleSubtask, renombrarMateria, desvincularClase, alarmEnabled, setAlarmEnabled }
+  return { tasks, addTask, toggleTask, deleteTask, updateTask, toggleSubtask, renombrarMateria, desvincularClase, importarSavio, alarmEnabled, setAlarmEnabled }
 }

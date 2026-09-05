@@ -10,6 +10,7 @@ import {
 } from '../config/icons'
 import { exportarDatos, importarDatos } from '../lib/dataManager'
 import PackManager from '../components/PackManager'
+import ImportarSavioModal from '../components/ImportarSavioModal'
 import { pedirPermiso } from '../utils/pushNotifications'
 
 const THEME_ICONS = {
@@ -27,10 +28,11 @@ const FAMILIA_ICONS = {
 
 const PREVIEW_ICONS = [HoyIcon, CalendarioIcon, HabitosIcon, HorarioIcon, TareasIcon]
 
-export default function SettingsView({ onClose, alarmEnabled, setAlarmEnabled, onVerNovedades, version, escapeInhibido }) {
+export default function SettingsView({ onClose, alarmEnabled, setAlarmEnabled, onVerNovedades, version, escapeInhibido, tasks = [], classes = [], onImportSavio }) {
   const { theme, setTema, setFamilia, setVariante, toggleModo, temasDisponibles, familias, packActivo } = useTheme()
   const fileRef = useRef(null)
   const [importStatus, setImportStatus] = useState(null)
+  const [savioOpen, setSavioOpen] = useState(false)
   const [permisoNotif, setPermisoNotif] = useState(
     () => ('Notification' in window ? Notification.permission : 'unsupported')
   )
@@ -41,12 +43,12 @@ export default function SettingsView({ onClose, alarmEnabled, setAlarmEnabled, o
   }
 
   useEffect(() => {
-    // Con las novedades abiertas encima, Escape cierra solo esa ventana.
-    if (escapeInhibido) return
+    // Con las novedades o el importador encima, Escape cierra solo esa ventana.
+    if (escapeInhibido || savioOpen) return
     const onKey = (e) => { if (e.key === 'Escape') onClose() }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
-  }, [onClose, escapeInhibido])
+  }, [onClose, escapeInhibido, savioOpen])
 
   const familiaActual = familias.find(f => f.key === (theme.familia || 'clasico'))
   const varianteActual = theme.variante
@@ -66,6 +68,7 @@ export default function SettingsView({ onClose, alarmEnabled, setAlarmEnabled, o
   }
 
   return (
+    <>
     <div className="fixed inset-0 z-50 flex items-end" onClick={onClose}>
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in" />
       <div
@@ -327,6 +330,27 @@ export default function SettingsView({ onClose, alarmEnabled, setAlarmEnabled, o
             </div>
           </section>
 
+          {/* === UNIVERSIDAD === */}
+          {onImportSavio && (
+            <section>
+              <h3 className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--color-muted)' }}>Universidad</h3>
+              <button
+                onClick={() => setSavioOpen(true)}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border transition-colors text-sm text-left"
+                style={{ backgroundColor: 'var(--color-fondo)', borderColor: 'var(--color-border)', color: 'var(--color-text)' }}
+              >
+                <CalendarioIcon className="w-5 h-5" style={{ color: 'var(--color-teal)' }} />
+                <div className="flex-1">
+                  <span>Importar de SAVIO</span>
+                  <p className="text-[11px]" style={{ color: 'var(--color-muted)' }}>
+                    Trae las entregas del calendario de Moodle como tareas
+                  </p>
+                </div>
+                <ChevronRightIcon className="w-4 h-4" style={{ color: 'var(--color-muted)' }} />
+              </button>
+            </section>
+          )}
+
           {/* === ACERCA DE === */}
           <section>
             <h3 className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--color-muted)' }}>Acerca de</h3>
@@ -355,5 +379,15 @@ export default function SettingsView({ onClose, alarmEnabled, setAlarmEnabled, o
         </div>
       </div>
     </div>
+
+    {savioOpen && (
+      <ImportarSavioModal
+        tasks={tasks}
+        classes={classes}
+        onImport={onImportSavio}
+        onClose={() => setSavioOpen(false)}
+      />
+    )}
+    </>
   )
 }

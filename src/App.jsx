@@ -27,7 +27,7 @@ export default function App() {
   const [pomodoroOpen, setPomodoroOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
 
-  const { tasks, addTask, toggleTask, deleteTask, toggleSubtask, updateTask, renombrarMateria: renombrarMateriaTareas, desvincularClase, alarmEnabled, setAlarmEnabled } = useTasks()
+  const { tasks, addTask, toggleTask, deleteTask, toggleSubtask, updateTask, renombrarMateria: renombrarMateriaTareas, desvincularClase, importarSavio, alarmEnabled, setAlarmEnabled } = useTasks()
   const { classes, addClass, deleteClass, updateClass } = useClasses()
   const { habits, addHabit, toggleHabit, deleteHabit, updateHabit } = useHabits()
   const { events, addEvent, deleteEvent } = useEvents()
@@ -152,6 +152,9 @@ export default function App() {
           onVerNovedades={novedades.abrirHistorial}
           version={novedades.version}
           escapeInhibido={novedades.abierto}
+          tasks={tasks}
+          classes={classes}
+          onImportSavio={importarSavio}
         />
       )}
 

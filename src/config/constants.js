@@ -8,6 +8,7 @@ export const STORAGE_KEYS = {
   ALARM_ENABLED: 'mi-dia-alarm-enabled',
   PACKS: 'mi-dia-packs',
   NOTAS: 'mi-dia-notas',
+  SAVIO_URL: 'mi-dia-savio-url',
   VERSION_VISTA: 'mi-dia-version-vista'
 }
 

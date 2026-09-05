@@ -14,6 +14,15 @@
 
 export const CAMBIOS = [
   {
+    version: '1.3.0',
+    fecha: '2026-09-05',
+    titulo: 'Importar tareas de SAVIO',
+    cambios: [
+      { tipo: 'nuevo', texto: 'Configuración → Universidad → Importar de SAVIO: descarga el calendario (.ics) de tu Moodle desde el navegador y súbelo. Taskway crea solo las entregas que aún no tienes y empareja cada una con su materia del Horario.' },
+      { tipo: 'nuevo', texto: 'Si una entrega ya importada cambia de fecha en SAVIO, al reimportar se actualiza; nunca toca una tarea que ya completaste o editaste.' }
+    ]
+  },
+  {
     version: '1.2.1',
     fecha: '2026-09-05',
     titulo: 'Académico sincronizado con el Horario',
