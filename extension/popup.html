@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Taskway · SAVIO</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { font: 13px/1.4 system-ui, sans-serif; width: 250px; margin: 0; padding: 14px; }
+  h1 { font-size: .95rem; margin: 0 0 .5rem; }
+  p { margin: .35rem 0; opacity: .85; }
+  button { width: 100%; margin-top: .6rem; padding: .5rem; font: inherit; font-weight: 600; border: 0; border-radius: .45rem; background: #1D9E75; color: #fff; cursor: pointer; }
+  button.sec { background: transparent; border: 1px solid #8886; color: inherit; }
+  #estado { margin-top: .5rem; font-size: .8rem; min-height: 1em; }
+</style>
+</head>
+<body>
+  <h1>Taskway · SAVIO</h1>
+  <p id="sync">—</p>
+  <p id="pend"></p>
+  <button id="importar">Importar ahora en Taskway</button>
+  <button id="opciones" class="sec">Opciones</button>
+  <div id="estado"></div>
+  <script src="popup.js"></script>
+</body>
+</html>

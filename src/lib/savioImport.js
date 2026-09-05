@@ -148,3 +148,32 @@ export function aplicarImportacion(tasks = [], drafts = []) {
   }))
   return [...actualizadas, ...creadas]
 }
+
+/** Clave de handoff que escribe la extension de navegador en el localStorage
+    de Taskway (no es una STORAGE_KEYS: es transitoria). */
+export const CLAVE_PUENTE = 'taskway-savio-ics'
+
+/**
+ * Procesa el .ics que dejó la extensión. Devuelve el plan de importación y el
+ * nuevo estado de sync, o null si no hay nada que hacer (sin archivo, ya
+ * procesado, o sin novedades).
+ *   crudo  -> string JSON { text, fetchedAt } (lo que hay en CLAVE_PUENTE)
+ *   sync   -> { lastFetchedAt } guardado en STORAGE_KEYS.SAVIO_SYNC
+ */
+export function procesarPuente(crudo, { tasks = [], materias = [], sync = {} }) {
+  if (!crudo) return null
+  let payload
+  try { payload = JSON.parse(crudo) } catch { return { descartar: true } }
+  if (!payload || typeof payload.text !== 'string') return { descartar: true }
+  if (payload.fetchedAt && sync.lastFetchedAt === payload.fetchedAt) return { descartar: true }
+
+  const { drafts } = construirImportacion(payload.text, materias)
+  const { nuevas, cambios } = diffImportacion(tasks, drafts)
+  return {
+    descartar: true,
+    drafts,
+    nuevas,
+    cambios,
+    nuevoSync: { lastFetchedAt: payload.fetchedAt || Date.now(), at: Date.now() }
+  }
+}

@@ -9,6 +9,7 @@ export const STORAGE_KEYS = {
   PACKS: 'mi-dia-packs',
   NOTAS: 'mi-dia-notas',
   SAVIO_URL: 'mi-dia-savio-url',
+  SAVIO_SYNC: 'mi-dia-savio-sync',
   VERSION_VISTA: 'mi-dia-version-vista'
 }
 

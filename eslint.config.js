@@ -27,4 +27,14 @@ export default defineConfig([
       },
     },
   },
+  {
+    files: ['extension/**/*.js'],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        ...globals.serviceworker,
+        ...globals.webextensions,
+      },
+    },
+  },
 ])

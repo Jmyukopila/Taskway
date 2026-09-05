@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Taskway · SAVIO — Opciones</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { font: 14px/1.5 system-ui, sans-serif; max-width: 34rem; margin: 2rem auto; padding: 0 1.25rem; }
+  h1 { font-size: 1.1rem; }
+  label { display: block; font-weight: 600; margin: 1.25rem 0 .35rem; }
+  input { width: 100%; padding: .55rem .7rem; font: inherit; border: 1px solid #8886; border-radius: .5rem; background: canvas; color: canvastext; }
+  .hint { font-size: .8rem; opacity: .75; margin-top: .35rem; }
+  button { margin-top: 1.25rem; padding: .55rem 1rem; font: inherit; font-weight: 600; border: 0; border-radius: .5rem; background: #1D9E75; color: #fff; cursor: pointer; }
+  button.sec { background: transparent; border: 1px solid #8886; color: inherit; }
+  #estado { margin-top: 1rem; font-size: .85rem; min-height: 1.2em; }
+  ol { padding-left: 1.2rem; font-size: .85rem; opacity: .85; }
+</style>
+</head>
+<body>
+  <h1>Taskway · SAVIO</h1>
+  <ol>
+    <li>En SAVIO: Calendario → <em>Exportar calendario</em> → copia la URL (lleva tu <code>authtoken</code>).</li>
+    <li>Pégala abajo junto con la URL donde abres Taskway.</li>
+    <li>Concede el permiso para Taskway. Listo: cada vez que entres a SAVIO se sincroniza.</li>
+  </ol>
+
+  <label for="savio">URL del calendario de SAVIO</label>
+  <input id="savio" type="url" placeholder="https://savio.utb.edu.co/calendar/export_execute.php?userid=...&authtoken=...">
+  <div class="hint">Se guarda solo en este navegador. Es una clave de solo lectura: recréala en SAVIO si la compartes.</div>
+
+  <label for="taskway">URL de Taskway</label>
+  <input id="taskway" type="url" placeholder="https://mi-taskway.vercel.app/">
+  <div class="hint">La dirección exacta donde abres la app en este navegador.</div>
+
+  <div>
+    <button id="guardar">Guardar</button>
+    <button id="permiso" class="sec">Conceder permiso para Taskway</button>
+  </div>
+  <div id="estado"></div>
+
+  <script src="options.js"></script>
+</body>
+</html>

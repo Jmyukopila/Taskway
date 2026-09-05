@@ -19,7 +19,8 @@ export const CAMBIOS = [
     titulo: 'Importar tareas de SAVIO',
     cambios: [
       { tipo: 'nuevo', texto: 'Configuración → Universidad → Importar de SAVIO: descarga el calendario (.ics) de tu Moodle desde el navegador y súbelo. Taskway crea solo las entregas que aún no tienes y empareja cada una con su materia del Horario.' },
-      { tipo: 'nuevo', texto: 'Si una entrega ya importada cambia de fecha en SAVIO, al reimportar se actualiza; nunca toca una tarea que ya completaste o editaste.' }
+      { tipo: 'nuevo', texto: 'Si una entrega ya importada cambia de fecha en SAVIO, al reimportar se actualiza; nunca toca una tarea que ya completaste o editaste.' },
+      { tipo: 'nuevo', texto: 'Extensión de navegador (en el repositorio, carpeta extension/): sincroniza SAVIO sola cada vez que entras al portal y la app la importa al abrirla, sin subir archivos a mano.' }
     ]
   },
   {

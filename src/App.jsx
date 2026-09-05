@@ -19,6 +19,7 @@ import UpdatePrompt from './components/UpdatePrompt'
 import InstallPrompt from './components/InstallPrompt'
 import NovedadesModal from './components/NovedadesModal'
 import useNovedades from './hooks/useNovedades'
+import useSavioBridge from './hooks/useSavioBridge'
 import { hoy } from './lib/dates'
 import { normalizarMateria } from './lib/materias'
 
@@ -33,6 +34,7 @@ export default function App() {
   const { events, addEvent, deleteEvent } = useEvents()
   const notas = useNotas()
   const novedades = useNovedades()
+  useSavioBridge({ classes, tasks, importarSavio })
 
   const { renombrarMateria: renombrarMateriaNotas, eliminarMateria: eliminarMateriaNotas } = notas
 

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { emparejarMateria, eventoATarea, construirImportacion, diffImportacion, aplicarImportacion } from '../src/lib/savioImport.js'
+import { emparejarMateria, eventoATarea, construirImportacion, diffImportacion, aplicarImportacion, procesarPuente } from '../src/lib/savioImport.js'
 
 const MATERIAS = ['Cálculo Diferencial', 'Física II', 'Programación']
 
@@ -105,4 +105,35 @@ test('aplicarImportacion: agrega las nuevas, mueve la fecha de las cambiadas y r
   assert.ok(nueva.id && nueva.id !== 'e2@savio')
   // idempotente: reimportar los mismos drafts no cambia nada
   assert.strictEqual(aplicarImportacion(res, drafts), res)
+})
+
+const ICS_PUENTE = [
+  'BEGIN:VCALENDAR', 'VERSION:2.0',
+  'BEGIN:VEVENT', 'UID:p1@savio', 'SUMMARY:Taller nuevo', 'DTSTART:20261001T235900',
+  'CATEGORIES:CÁLCULO DIFERENCIAL - GRUPO 4', 'END:VEVENT',
+  'END:VCALENDAR'
+].join('\r\n')
+
+test('procesarPuente: sin archivo o ya procesado -> null / descartar', () => {
+  assert.equal(procesarPuente(null, { tasks: [], materias: [] }), null)
+  assert.deepEqual(procesarPuente('{no es json', { tasks: [], materias: [] }), { descartar: true })
+  const payload = JSON.stringify({ text: ICS_PUENTE, fetchedAt: 111 })
+  assert.deepEqual(
+    procesarPuente(payload, { tasks: [], materias: [], sync: { lastFetchedAt: 111 } }),
+    { descartar: true }
+  )
+})
+
+test('procesarPuente: .ics nuevo -> plan con las tareas nuevas y el sync actualizado', () => {
+  const payload = JSON.stringify({ text: ICS_PUENTE, fetchedAt: 222 })
+  const plan = procesarPuente(payload, { tasks: [], materias: ['Cálculo Diferencial'], sync: { lastFetchedAt: 111 } })
+  assert.equal(plan.descartar, true)
+  assert.equal(plan.nuevas.length, 1)
+  assert.equal(plan.nuevas[0].materia, 'Cálculo Diferencial')
+  assert.equal(plan.nuevoSync.lastFetchedAt, 222)
+  // reimportar el mismo contenido: sin novedades
+  const yaImportada = aplicarImportacion([], plan.drafts)
+  const plan2 = procesarPuente(payload, { tasks: yaImportada, materias: ['Cálculo Diferencial'], sync: { lastFetchedAt: 111 } })
+  assert.equal(plan2.nuevas.length, 0)
+  assert.equal(plan2.cambios.length, 0)
 })
