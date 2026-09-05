@@ -14,6 +14,13 @@ test('emparejarMateria: por subcadena cuando el curso trae mas palabras', () => 
   assert.equal(emparejarMateria('Taller de Programación Avanzada', MATERIAS), 'Programación')
 })
 
+test('emparejarMateria: limpia los codigos de seccion de la UTB y empareja por solape de palabras', () => {
+  const h = ['Arquitectura de Software', 'Gestión de Proyectos', 'Creatividad y Emprendimiento']
+  assert.equal(emparejarMateria('ARQUITECTURA DE SOFTWARE - METACURSO 202620', h), 'Arquitectura de Software')
+  assert.equal(emparejarMateria('CREATIVIDAD Y EMPRENDIMIENTO-AEMP-G04A-M-1263-202620', h), 'Creatividad y Emprendimiento')
+  assert.equal(emparejarMateria('GESTION PROYECTOS TRANSFORM-MKTD-T06B-A-2368-202620', h), 'Gestión de Proyectos')
+})
+
 test('emparejarMateria: sin match devuelve el nombre limpio del curso, no vacio', () => {
   assert.equal(emparejarMateria('Cátedra Institucional', MATERIAS), 'Cátedra Institucional')
   assert.equal(emparejarMateria('', MATERIAS), '')
@@ -40,6 +47,15 @@ test('eventoATarea: dia completo sin hora; sin fecha o sin uid devuelve null', (
   assert.equal(eventoATarea({ ...base, inicio: { ymd: '2026-10-01', hm: null, diaCompleto: true } }).hora, null)
   assert.equal(eventoATarea({ ...base, inicio: null }), null)
   assert.equal(eventoATarea({ ...base, uid: '', inicio: { ymd: '2026-10-01' } }), null)
+})
+
+test('eventoATarea: limpia los titulos reales de Moodle y salta los "Se abre"', () => {
+  const con = (titulo) => eventoATarea({ uid: 'x', titulo, categorias: [], inicio: { ymd: '2026-10-01', hm: '23:55' } })
+  assert.equal(con('Vencimiento de Mapa de Stakeholders').titulo, 'Mapa de Stakeholders')
+  assert.equal(con('Se cierra Segundo Quiz de Conceptos').titulo, 'Segundo Quiz de Conceptos')
+  assert.equal(con('LA CREATIVIDAD EN LA ERA IA pendiente').titulo, 'LA CREATIVIDAD EN LA ERA IA')
+  assert.equal(con('quiz de conceptos').titulo, 'Quiz de conceptos') // capitaliza
+  assert.equal(con('Se abre Segundo Quiz de Conceptos'), null) // no es un vencimiento
 })
 
 const ICS = [

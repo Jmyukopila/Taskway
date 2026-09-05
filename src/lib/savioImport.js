@@ -11,11 +11,15 @@ import { hoy } from './dates.js'
    ========================================================================== */
 
 /** Normaliza un nombre de curso/materia para compararlo: sin tildes, mayusculas,
-    sin sufijos de grupo/periodo ni parentesis. */
+    sin codigos de seccion (UTB usa "- METACURSO 202620", "-MKTD-T06B-A-2368-...")
+    ni sufijos de grupo/periodo ni parentesis. */
 function clave(texto) {
   return (texto || '')
     .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
     .toUpperCase()
+    .replace(/\s*-\s*METACURSO\b.*$/, '')
+    .replace(/-[A-Z]{2,5}(?:-[A-Z0-9]+)+$/, '')
+    .replace(/\b20\d{4}\b/g, ' ')
     .replace(/\([^)]*\)/g, ' ')
     .replace(/\b(GRUPO|GRP|PARALELO|SECCION|SECION|NRC)\s*[:.-]?\s*\w+/g, ' ')
     .replace(/\b\d{4}\s*-\s*\d\b/g, ' ')
@@ -24,6 +28,8 @@ function clave(texto) {
     .trim()
 }
 
+const relevantes = (k) => k.split(' ').filter(t => t.length >= 3)
+
 /** Empareja el nombre de un curso con una materia del horario. Devuelve el
     nombre EXACTO de la materia del horario si hay match, o el curso limpio. */
 export function emparejarMateria(curso, materiasHorario = []) {
@@ -31,33 +37,48 @@ export function emparejarMateria(curso, materiasHorario = []) {
   if (!bruto) return ''
   const objetivo = clave(bruto)
   if (!objetivo) return bruto
+  const tokObjetivo = new Set(relevantes(objetivo))
 
-  let mejorParcial = ''
+  let mejor = ''
+  let mejorPuntos = 0
   for (const materia of materiasHorario) {
     const k = clave(materia)
     if (!k) continue
     if (k === objetivo) return materia
-    if ((k.length >= 4 && objetivo.includes(k)) || (objetivo.length >= 4 && k.includes(objetivo))) {
-      if (k.length > clave(mejorParcial).length) mejorParcial = materia
+    if ((k.length >= 4 && objetivo.includes(k)) || (objetivo.length >= 4 && k.includes(objetivo))) return materia
+    // Solape de palabras: al menos 2 en comun y >= 60% de las de la materia.
+    const tokMateria = relevantes(k)
+    if (!tokMateria.length) continue
+    const comunes = tokMateria.filter(t => tokObjetivo.has(t)).length
+    if (comunes >= 2 && comunes / tokMateria.length >= 0.6 && comunes > mejorPuntos) {
+      mejor = materia
+      mejorPuntos = comunes
     }
   }
-  return mejorParcial || bruto
+  return mejor || bruto
 }
 
+// "Se abre X" es cuando una actividad se habilita, no un vencimiento: se ignora.
+const RE_IGNORAR = /^se abre\s/i
+
+const PREFIJOS_TITULO = [/^vencimiento de\s+/i, /^se cierra\s+/i, /^cierre de\s+/i, /^entrega de\s+/i]
 const SUFIJOS_TITULO = [
   / is due$/i, / vence$/i, / se debe entregar$/i, / debe enviarse$/i,
-  / cierra$/i, / \(vence\)$/i, / - fecha de entrega$/i, / fecha de entrega$/i
+  / cierra$/i, / \(vence\)$/i, / - fecha de entrega$/i, / fecha de entrega$/i,
+  / pendiente$/i
 ]
 
 function limpiarTitulo(titulo) {
   let t = (titulo || '').trim()
+  for (const re of PREFIJOS_TITULO) t = t.replace(re, '').trim()
   for (const re of SUFIJOS_TITULO) t = t.replace(re, '').trim()
-  return t || 'Tarea'
+  return t ? t[0].toUpperCase() + t.slice(1) : 'Tarea'
 }
 
-/** Un evento -> borrador de tarea, o null si no sirve (sin fecha). */
+/** Un evento -> borrador de tarea, o null si no sirve (sin fecha o es un "se abre"). */
 export function eventoATarea(evento, materiasHorario = []) {
   if (!evento?.inicio?.ymd || !evento.uid) return null
+  if (RE_IGNORAR.test(evento.titulo || '')) return null
   return {
     origenId: evento.uid,
     titulo: limpiarTitulo(evento.titulo),
