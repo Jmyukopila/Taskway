@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Taskway · SAVIO",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Lleva las entregas del calendario de SAVIO (Moodle) a Taskway sin salir de tu sesión.",
   "permissions": ["storage", "scripting", "notifications", "alarms"],
   "host_permissions": ["https://savio.utb.edu.co/*"],

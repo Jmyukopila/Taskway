@@ -21,7 +21,9 @@ function pick(map, keys) {
   return out
 }
 
-function crearEntorno({ fetchOk = true, icsText = ICS } = {}) {
+const RETO_CF = '<!DOCTYPE html><html><head><title>Just a moment...</title></head><body>challenge-platform</body></html>'
+
+function crearEntorno({ status = 200, respuesta = ICS } = {}) {
   const sync = new Map()
   const local = new Map()
   const listeners = { message: [], notifClick: [], tabUpdated: [] }
@@ -66,12 +68,15 @@ function crearEntorno({ fetchOk = true, icsText = ICS } = {}) {
       onUpdated: { addListener: fn => listeners.tabUpdated.push(fn), removeListener: () => {} }
     },
     scripting: { executeScript: (args) => { scripts.push(args); return Promise.resolve() } },
-    permissions: { contains: () => Promise.resolve(true), request: () => Promise.resolve(true) }
+    permissions: { contains: () => Promise.resolve(true), request: () => Promise.resolve(true) },
+    action: {
+      _badge: '',
+      setBadgeText: ({ text }) => { chrome.action._badge = text; return Promise.resolve() },
+      setBadgeBackgroundColor: () => Promise.resolve()
+    }
   }
 
-  const fetch = () => fetchOk
-    ? Promise.resolve({ ok: true, text: () => Promise.resolve(icsText) })
-    : Promise.resolve({ ok: false })
+  const fetch = () => Promise.resolve({ ok: status < 400, status, text: () => Promise.resolve(respuesta) })
 
   return { chrome, fetch, state: { sync, local, listeners, notifs, tabs, scripts } }
 }
@@ -95,8 +100,29 @@ test('savio.js descarga el .ics, guarda los UIDs y avisa de las novedades', asyn
   assert.equal(env.state.local.get('savioIcs').text, ICS)
   assert.deepEqual(env.state.local.get('savioSeenUids'), ['e1@savio', 'e2@savio'])
   assert.equal(env.state.local.get('savioPendientes'), 2)
+  assert.equal(env.state.local.get('savioError'), null)
   assert.equal(env.state.notifs.length, 1)
   assert.match(env.state.notifs[0].opts.message, /2 entregas nuevas/)
+  assert.equal(env.chrome.action._badge, '2') // insignia con el pendiente
+})
+
+test('savio.js: si el authtoken caducó (respuesta sin calendario) marca el error', async () => {
+  const env = crearEntorno({ status: 403, respuesta: '<html><body>Invalid token</body></html>' })
+  env.state.sync.set('savioUrl', 'https://savio.utb.edu.co/calendar/export_execute.php?x')
+  cargarBackground(env)
+  await correrSavio(env)
+
+  assert.equal(env.state.local.has('savioIcs'), false)
+  assert.equal(env.state.local.get('savioError').status, 403)
+  assert.equal(env.chrome.action._badge, '!')
+})
+
+test('savio.js: el reto de Cloudflare no cuenta como enlace roto', async () => {
+  const env = crearEntorno({ status: 403, respuesta: RETO_CF })
+  env.state.sync.set('savioUrl', 'https://savio.utb.edu.co/calendar/export_execute.php?x')
+  await correrSavio(env)
+  assert.equal(env.state.local.has('savioError'), false)
+  assert.equal(env.state.local.has('savioIcs'), false)
 })
 
 test('savio.js no hace nada sin URL configurada ni si sincronizó hace poco', async () => {

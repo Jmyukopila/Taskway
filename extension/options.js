@@ -30,7 +30,11 @@ document.getElementById('guardar').addEventListener('click', async () => {
     return msg('La URL de Taskway no es válida.', true)
   }
   await chrome.storage.sync.set({ savioUrl, taskwayUrl })
-  await chrome.storage.local.remove(['savioLastSync', 'savioSeenUids'])
+  // Empezar de cero: olvidar el .ics viejo, los UIDs vistos y cualquier error.
+  await chrome.storage.local.remove([
+    'savioLastSync', 'savioLastAttempt', 'savioSeenUids', 'savioIcs', 'savioError', 'savioPendientes'
+  ])
+  if (chrome.action) chrome.action.setBadgeText({ text: '' })
   msg('Guardado. Abre savio.utb.edu.co para la primera sincronización.')
 })
 

@@ -3,6 +3,7 @@
    .ics del calendario y lo deja guardado para que Taskway lo importe. */
 
 (async () => {
+  const MIN = 60 * 1000
   let cfg
   try {
     cfg = await chrome.storage.sync.get(['savioUrl'])
@@ -11,30 +12,42 @@
   }
   if (!cfg.savioUrl) return
 
-  // No martillear en cada navegación: como mucho una vez cada 30 min.
-  const { savioLastSync = 0 } = await chrome.storage.local.get(['savioLastSync'])
-  if (Date.now() - savioLastSync < 30 * 60 * 1000) return
+  const st = await chrome.storage.local.get(['savioLastSync', 'savioLastAttempt', 'savioSeenUids'])
+  const ahora = Date.now()
+  // No martillear: 30 min entre sincronizaciones, 5 min entre reintentos fallidos.
+  if (ahora - (st.savioLastSync || 0) < 30 * MIN) return
+  if (ahora - (st.savioLastAttempt || 0) < 5 * MIN) return
+  await chrome.storage.local.set({ savioLastAttempt: ahora })
 
+  let res
   let texto
   try {
-    const res = await fetch(cfg.savioUrl, { credentials: 'include' })
-    if (!res.ok) return
+    res = await fetch(cfg.savioUrl, { credentials: 'include' })
     texto = await res.text()
   } catch {
-    return // reto de Cloudflare o red: se reintenta en la próxima visita
+    return // red o Cloudflare sin resolver: transitorio, se reintenta luego
   }
-  if (!texto.includes('BEGIN:VEVENT')) return
+
+  // Cloudflare aún sin resolver en esta pestaña: no es culpa del enlace.
+  if (/just a moment|challenge-platform|cf_chl/i.test(texto)) return
+
+  if (!texto.includes('BEGIN:VEVENT')) {
+    // Respuesta válida pero no es un calendario: el authtoken caducó o cambió.
+    await chrome.storage.local.set({ savioError: { status: res.status, at: ahora } })
+    chrome.runtime.sendMessage({ type: 'savio-error' }).catch(() => {})
+    return
+  }
 
   const uids = [...texto.matchAll(/^UID:(.+)$/gm)].map(m => m[1].trim())
-  const { savioSeenUids = [] } = await chrome.storage.local.get(['savioSeenUids'])
-  const vistas = new Set(savioSeenUids)
+  const vistas = new Set(st.savioSeenUids || [])
   const nuevas = uids.filter(u => !vistas.has(u))
 
   await chrome.storage.local.set({
-    savioIcs: { text: texto, fetchedAt: Date.now() },
+    savioIcs: { text: texto, fetchedAt: ahora },
     savioSeenUids: uids,
-    savioLastSync: Date.now(),
-    savioPendientes: nuevas.length
+    savioLastSync: ahora,
+    savioPendientes: nuevas.length,
+    savioError: null
   })
 
   chrome.runtime.sendMessage({ type: 'savio-sincronizado', nuevas: nuevas.length }).catch(() => {})

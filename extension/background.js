@@ -1,5 +1,5 @@
-/* Service worker: avisa cuando SAVIO trae entregas nuevas y, a petición,
-   abre Taskway y le inyecta el .ics para que lo importe. */
+/* Service worker: avisa cuando SAVIO trae entregas nuevas, mantiene la insignia
+   del icono al día y, a petición, abre Taskway y le inyecta el .ics. */
 
 const NOTIF_ID = 'savio-nuevas'
 
@@ -14,10 +14,15 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
         priority: 1
       })
     }
+    refrescarInsignia()
+    return
+  }
+  if (msg?.type === 'savio-error') {
+    refrescarInsignia()
     return
   }
   if (msg?.type === 'importar') {
-    importarEnTaskway().then(sendResponse)
+    importarEnTaskway().then((r) => { refrescarInsignia(); sendResponse(r) })
     return true // respuesta asíncrona
   }
 })
@@ -25,9 +30,25 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
 chrome.notifications.onClicked.addListener((id) => {
   if (id === NOTIF_ID) {
     chrome.notifications.clear(id)
-    importarEnTaskway()
+    importarEnTaskway().then(refrescarInsignia)
   }
 })
+
+if (chrome.runtime.onStartup) chrome.runtime.onStartup.addListener(refrescarInsignia)
+if (chrome.runtime.onInstalled) chrome.runtime.onInstalled.addListener(refrescarInsignia)
+
+async function refrescarInsignia() {
+  const { savioPendientes = 0, savioError } = await chrome.storage.local.get(['savioPendientes', 'savioError'])
+  if (savioError) {
+    await chrome.action.setBadgeText({ text: '!' })
+    await chrome.action.setBadgeBackgroundColor({ color: '#d33' })
+  } else if (savioPendientes > 0) {
+    await chrome.action.setBadgeText({ text: String(Math.min(savioPendientes, 99)) })
+    await chrome.action.setBadgeBackgroundColor({ color: '#1D9E75' })
+  } else {
+    await chrome.action.setBadgeText({ text: '' })
+  }
+}
 
 async function importarEnTaskway() {
   const { taskwayUrl } = await chrome.storage.sync.get(['taskwayUrl'])

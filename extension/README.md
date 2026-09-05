@@ -45,12 +45,21 @@ inteligencia vive en la app.
 
 Nada sale de tu navegador: la extensión no habla con ningún servidor propio.
 
+## Cuando el enlace deja de funcionar
+
+Si recreas el token en SAVIO (o caduca), la extensión lo detecta: el icono
+muestra una insignia roja `!` y el popup te dice "El enlace de SAVIO no
+funcionó". Abre **Opciones**, pega el enlace nuevo y guarda — eso limpia el
+estado y vuelve a sincronizar desde cero en tu próxima visita a SAVIO.
+
+La insignia verde con un número indica entregas nuevas sin importar.
+
 ## Seguridad
 
 La URL del calendario lleva un token equivalente a una contraseña de solo
 lectura. Se guarda en `chrome.storage.sync` (tu perfil de Chrome). Si la
 compartes o sospechas que se filtró, recréala en SAVIO: *Preferencias → Claves de
-seguridad → restablecer la de "Exportar calendario"*.
+seguridad → restablecer la de "Exportar calendario"* y pega la nueva en Opciones.
 
 ## Limitaciones
 
