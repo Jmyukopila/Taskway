@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import Checkbox from './ui/Checkbox'
 import Badge from './ui/Badge'
+import TaskAcademicInfo from './TaskAcademicInfo'
 import { RecurringIcon, ClockIcon, EditIcon, TrashIcon, MoreIcon, CheckIcon } from '../config/icons'
 import { hoy } from '../lib/dates'
 
@@ -10,7 +11,7 @@ function prioridadBorder(p) {
   return p === 'alta' ? 'var(--color-purple)' : p === 'media' ? 'var(--color-teal)' : 'var(--color-muted)'
 }
 
-export default function TaskCard({ tarea, onToggle, onDelete, toggleSubtask, onEdit }) {
+export default function TaskCard({ tarea, onToggle, onDelete, toggleSubtask, onEdit, classes = [] }) {
   const [showMenu, setShowMenu] = useState(false)
   const [subtasksOpen, setSubtasksOpen] = useState(false)
 
@@ -27,8 +28,7 @@ export default function TaskCard({ tarea, onToggle, onDelete, toggleSubtask, onE
         backgroundColor: 'var(--color-card)',
         borderColor: 'var(--color-border)',
         borderLeftWidth: '3px',
-        borderLeftColor: prioridadBorder(tarea.prioridad),
-        opacity: tarea.completada ? 0.6 : 1
+        borderLeftColor: prioridadBorder(tarea.prioridad)
       }}
     >
       <div className="flex items-start gap-3">
@@ -69,6 +69,8 @@ export default function TaskCard({ tarea, onToggle, onDelete, toggleSubtask, onE
           {tarea.descripcion && (
             <p className="text-xs mt-1 line-clamp-2" style={{ color: 'var(--color-text-secondary)' }}>{tarea.descripcion}</p>
           )}
+
+          <TaskAcademicInfo tarea={tarea} classes={classes} />
 
           <div className="flex items-center gap-2 mt-1.5 flex-wrap">
             {tarea.hora && (

@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react'
 import TaskCard from '../components/TaskCard'
 import AddTaskModal from '../components/AddTaskModal'
 import { formatFecha } from '../lib/dates'
+import { getMateriaTarea } from '../lib/academico'
 import { SearchIcon, CloseIcon, ChevronRightIcon, EmptyIcon, PlusIcon } from '../config/icons'
 
 const FILTROS = [
@@ -10,7 +11,7 @@ const FILTROS = [
   { key: 'completed', label: 'Completadas' }
 ]
 
-export default function TasksView({ tasks, onAddTask, onToggle, onDeleteTask, toggleSubtask, onUpdateTask }) {
+export default function TasksView({ tasks, classes = [], onAddTask, onToggle, onDeleteTask, toggleSubtask, onUpdateTask }) {
   const [showModal, setShowModal] = useState(false)
   const [editingTask, setEditingTask] = useState(null)
   const [filtro, setFiltro] = useState('all')
@@ -21,11 +22,11 @@ export default function TasksView({ tasks, onAddTask, onToggle, onDeleteTask, to
     let t = filtro === 'all' ? tasks : tasks.filter(ta => filtro === 'pending' ? !ta.completada : ta.completada)
     if (busqueda.trim()) {
       const q = busqueda.toLowerCase()
-      t = t.filter(ta => ta.titulo.toLowerCase().includes(q) || (ta.descripcion || '').toLowerCase().includes(q))
+      t = t.filter(ta => ta.titulo.toLowerCase().includes(q) || (ta.descripcion || '').toLowerCase().includes(q) || getMateriaTarea(ta, classes).toLowerCase().includes(q))
     }
     // Copia antes de ordenar: con el filtro "all", t es el array de estado.
     return [...t].sort((a, b) => (b.fecha || '').localeCompare(a.fecha || '') || (a.hora || '').localeCompare(b.hora || ''))
-  }, [tasks, filtro, busqueda])
+  }, [tasks, filtro, busqueda, classes])
 
   const tareasAgrupadas = useMemo(() => {
     const grupos = {}
@@ -116,7 +117,7 @@ export default function TasksView({ tasks, onAddTask, onToggle, onDeleteTask, to
                 {isExpanded && (
                   <div className="space-y-2">
                     {tareas.map(t => (
-                      <TaskCard key={t.id} tarea={t} onToggle={onToggle} onDelete={onDeleteTask} toggleSubtask={toggleSubtask} onEdit={setEditingTask} />
+                      <TaskCard key={t.id} tarea={t} classes={classes} onToggle={onToggle} onDelete={onDeleteTask} toggleSubtask={toggleSubtask} onEdit={setEditingTask} />
                     ))}
                   </div>
                 )}
@@ -140,10 +141,11 @@ export default function TasksView({ tasks, onAddTask, onToggle, onDeleteTask, to
         <PlusIcon className="w-6 h-6" />
       </button>
 
-      {showModal && <AddTaskModal onClose={() => setShowModal(false)} onAdd={onAddTask} />}
+      {showModal && <AddTaskModal classes={classes} onClose={() => setShowModal(false)} onAdd={onAddTask} />}
       {editingTask && (
         <AddTaskModal
           task={editingTask}
+          classes={classes}
           onClose={() => setEditingTask(null)}
           onAdd={(data) => { onUpdateTask?.(editingTask.id, data); setEditingTask(null) }}
         />

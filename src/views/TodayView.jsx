@@ -1,7 +1,9 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import DayTimeline from '../components/DayTimeline'
+import TaskCard from '../components/TaskCard'
+import AddTaskModal from '../components/AddTaskModal'
 import { hoy, diaSemana, formatFecha } from '../lib/dates'
-import { ChevronRightIcon, CheckIcon } from '../config/icons'
+import { ChevronRightIcon } from '../config/icons'
 
 function getSaludo() {
   const h = new Date().getHours()
@@ -13,6 +15,7 @@ function getSaludo() {
 export default function TodayView({ tasks, classes, onToggle, onDeleteTask, toggleSubtask, onUpdateTask }) {
   const hoyStr = hoy()
   const dayName = diaSemana(hoyStr)
+  const [editingTask, setEditingTask] = useState(null)
 
   const tareasHoy = useMemo(() => tasks.filter(t => t.fecha === hoyStr), [tasks, hoyStr])
   const clasesHoy = useMemo(() => classes.filter(c => c.diasSemana.includes(dayName)), [classes, dayName])
@@ -52,10 +55,11 @@ export default function TodayView({ tasks, classes, onToggle, onDeleteTask, togg
       <DayTimeline
         tareas={tareasPendientesHoy}
         clases={clasesHoy}
+        classes={classes}
         onToggle={onToggle}
         onDeleteTask={onDeleteTask}
         toggleSubtask={toggleSubtask}
-        onEditTask={onUpdateTask}
+        onEditTask={setEditingTask}
       />
 
       {/* Completadas hoy */}
@@ -68,17 +72,19 @@ export default function TodayView({ tasks, classes, onToggle, onDeleteTask, togg
           </summary>
           <div className="mt-3 space-y-2">
             {tareasCompletadasHoy.map(t => (
-              <div key={t.id} className="rounded-xl border p-3 flex items-center gap-3"
-                style={{ backgroundColor: 'color-mix(in srgb, var(--color-card) 50%, transparent)', borderColor: 'var(--color-border)', opacity: 0.6 }}>
-                <div className="w-5 h-5 rounded-full flex items-center justify-center"
-                  style={{ backgroundColor: 'color-mix(in srgb, var(--color-teal) 30%, transparent)' }}>
-                  <CheckIcon className="w-3 h-3" style={{ color: 'var(--color-teal)' }} />
-                </div>
-                <span className="text-sm line-through" style={{ color: 'var(--color-text)' }}>{t.titulo}</span>
-              </div>
+              <TaskCard key={t.id} tarea={t} classes={classes} onToggle={onToggle} onDelete={onDeleteTask} toggleSubtask={toggleSubtask} onEdit={setEditingTask} />
             ))}
           </div>
         </details>
+      )}
+
+      {editingTask && (
+        <AddTaskModal
+          task={editingTask}
+          classes={classes}
+          onClose={() => setEditingTask(null)}
+          onAdd={(data) => { onUpdateTask?.(editingTask.id, data); setEditingTask(null) }}
+        />
       )}
     </div>
   )

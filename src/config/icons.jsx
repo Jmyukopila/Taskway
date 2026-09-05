@@ -79,6 +79,8 @@ export const TareasIcon = makeTabIcon('tareas', false)
 export const TareasIconActive = makeTabIcon('tareas', true)
 export const DashboardIcon = makeTabIcon('dashboard', false)
 export const DashboardIconActive = makeTabIcon('dashboard', true)
+export const AcademicoIcon = makeTabIcon('academico', false)
+export const AcademicoIconActive = makeTabIcon('academico', true)
 
 /* ==================== ICONOS DE UTILIDAD ==================== */
 

@@ -1,6 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react'
-import { TEMAS } from '../config/themes'
+import { createContext, useContext, useState, useLayoutEffect, useCallback, useMemo } from 'react'
+import { TEMAS, getVisualTokens } from '../config/themes'
 import { FAMILIAS, getVariante } from '../config/estilos'
 import { STORAGE_KEYS } from '../config/constants'
 import { loadJSON, saveJSON } from '../lib/storage'
@@ -54,6 +54,15 @@ function applyTheme(temaKey, modo, familia, variante, pack) {
     }
   }
 
+  const paleta = Object.fromEntries(Object.keys(TEMAS.default.dark).map(key => [
+    key, root.style.getPropertyValue(`--color-${key}`)
+  ]))
+  const familiaActiva = pack?.base || familia || 'clasico'
+  Object.entries(getVisualTokens(paleta, familiaActiva)).forEach(([key, val]) => {
+    root.style.setProperty(`--ui-${key}`, val)
+  })
+  root.setAttribute('data-familia', familiaActiva)
+  root.style.colorScheme = modo
   const colorFondo = pack?.colores?.[modo]?.fondo || baseVars?.fondo || '#0f0f0f'
   root.setAttribute('data-theme', pack ? `pack-${pack.id}-${modo}` : `${temaKey}-${modo}`)
   document.querySelector('meta[name="theme-color"]')?.setAttribute('content', colorFondo)
@@ -70,7 +79,7 @@ export function ThemeProvider({ children }) {
     [packs, theme.pack]
   )
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     applyTheme(theme.tema, theme.modo, theme.familia, theme.variante, packActivo)
     saveJSON(STORAGE_KEYS.THEME, theme)
   }, [theme, packActivo])

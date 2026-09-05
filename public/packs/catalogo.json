@@ -2,6 +2,17 @@
   "formato": 1,
   "packs": [
     {
+      "id": "warrior",
+      "nombre": "Warrior",
+      "descripcion": "Fantasia oscura: eclipse carmesi, mandoble y tinta sobre acero",
+      "muestra": [
+        "#0c0b0d",
+        "#ef6a70",
+        "#b9b7c0",
+        "#191619"
+      ]
+    },
+    {
       "id": "shonen",
       "nombre": "Shonen",
       "descripcion": "Tinta, naranja de impacto y lineas de velocidad",

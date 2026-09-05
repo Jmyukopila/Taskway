@@ -1,16 +1,17 @@
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useEffect } from 'react'
 
 import useTasks from './hooks/useTasks'
 import useClasses from './hooks/useClasses'
 import useHabits from './hooks/useHabits'
 import useEvents from './hooks/useEvents'
+import useNotas from './hooks/useNotas'
 import BottomNav from './components/BottomNav'
 import TodayView from './views/TodayView'
 import CalendarView from './views/CalendarView'
 import HabitsView from './views/HabitsView'
 import ScheduleView from './views/ScheduleView'
 import TasksView from './views/TasksView'
-import DashboardView from './views/DashboardView'
+import AcademicoView from './views/AcademicoView'
 import PomodoroTimer from './components/PomodoroTimer'
 import { GearIcon, ClockIcon } from './config/icons'
 import SettingsView from './views/SettingsView'
@@ -29,7 +30,15 @@ export default function App() {
   const { classes, addClass, deleteClass, updateClass } = useClasses()
   const { habits, addHabit, toggleHabit, deleteHabit, updateHabit } = useHabits()
   const { events, addEvent, deleteEvent } = useEvents()
+  const notas = useNotas()
   const novedades = useNovedades()
+
+  // Las notas se guardan por clase del horario: al borrar una clase, se descarta
+  // su entrada para que no quede colgada en los datos ni en la copia de seguridad.
+  const { prune: pruneNotas } = notas
+  useEffect(() => {
+    pruneNotas(classes.map(c => c.id))
+  }, [classes, pruneNotas])
 
   const handleToggleTask = useCallback((id) => toggleTask(id), [toggleTask])
 
@@ -43,15 +52,15 @@ export default function App() {
       case 'today':
         return <TodayView tasks={tasks} classes={classes} onToggle={handleToggleTask} onDeleteTask={deleteTask} toggleSubtask={toggleSubtask} onOpenPomodoro={() => setPomodoroOpen(true)} onUpdateTask={updateTask} />
       case 'calendar':
-        return <CalendarView tasks={tasks} classes={classes} events={events} onToggle={handleToggleTask} onAddEvent={addEvent} onDeleteEvent={deleteEvent} />
+        return <CalendarView tasks={tasks} classes={classes} events={events} onToggle={handleToggleTask} onAddEvent={addEvent} onDeleteEvent={deleteEvent} onUpdateTask={updateTask} />
       case 'habits':
         return <HabitsView habits={habits} onAdd={addHabit} onToggle={toggleHabit} onDelete={deleteHabit} onUpdateHabit={updateHabit} />
       case 'schedule':
         return <ScheduleView classes={classes} onAddClass={addClass} onDeleteClass={deleteClass} onUpdateClass={updateClass} />
-      case 'dashboard':
-        return <DashboardView tasks={tasks} habits={habits} />
+      case 'academico':
+        return <AcademicoView tasks={tasks} habits={habits} classes={classes} notas={notas} onAddTask={addTask} onToggle={handleToggleTask} onDeleteTask={deleteTask} toggleSubtask={toggleSubtask} onUpdateTask={updateTask} />
       case 'tasks':
-        return <TasksView tasks={tasks} onAddTask={addTask} onToggle={handleToggleTask} onDeleteTask={deleteTask} toggleSubtask={toggleSubtask} onUpdateTask={updateTask} />
+        return <TasksView tasks={tasks} classes={classes} onAddTask={addTask} onToggle={handleToggleTask} onDeleteTask={deleteTask} toggleSubtask={toggleSubtask} onUpdateTask={updateTask} />
       default:
         return null
     }
@@ -74,7 +83,7 @@ export default function App() {
           <button
             onClick={() => setPomodoroOpen(true)}
             className="p-2 rounded-xl transition-all active:scale-90"
-            style={{ backgroundColor: 'var(--color-card)', color: 'var(--color-teal)' }}
+            style={{ backgroundColor: 'var(--ui-calendar-surface)', color: 'var(--ui-icon)', borderRadius: 'var(--ui-control-radius)' }}
             title="Pomodoro"
             aria-label="Abrir temporizador Pomodoro"
           >
@@ -83,7 +92,7 @@ export default function App() {
           <button
             onClick={() => setSettingsOpen(true)}
             className="p-2 rounded-xl transition-all active:scale-90"
-            style={{ backgroundColor: 'var(--color-card)', color: 'var(--color-text)' }}
+            style={{ backgroundColor: 'var(--ui-calendar-surface)', color: 'var(--ui-icon-muted)', borderRadius: 'var(--ui-control-radius)' }}
             title="Configuracion"
             aria-label="Abrir configuracion"
           >

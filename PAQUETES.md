@@ -113,12 +113,12 @@ no cuadra, el paquete se rechaza con un mensaje concreto.
 
 ## Sobre los paquetes incluidos
 
-Los diez paquetes del catálogo son **diseños originales inspirados en géneros y
+Los once paquetes del catálogo son **diseños originales inspirados en géneros y
 en motivos tradicionales de dominio público**, no en obras concretas: no usan
 personajes, logos ni nombres de series o películas existentes.
 
 - Inspirados en géneros: Shonen, Mecha, Magia, Retro VHS, Ópera espacial, Kaiju,
-  Espectro urbano.
+  Espectro urbano, Fantasía oscura (Warrior).
 - Construidos sobre patrones tradicionales japoneses (dominio público):
   Ichimatsu (tablero de damas y estrella de cáñamo), Sakura (pétalos de cerezo)
   y Seigaiha (olas).

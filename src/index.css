@@ -93,7 +93,7 @@ body {
 /* Fondo de los paquetes de temas: las capas las compone lib/fondos.js a partir
    de una especificacion ya validada. Sin paquete activo, --fondo-imagen es
    "none" y esto equivale al color plano de siempre. */
-body, #root {
+body {
   background-color: var(--color-fondo);
   background-image: var(--fondo-imagen, none);
   background-size: var(--fondo-tamano, auto);
@@ -166,4 +166,139 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
 }
 input::placeholder, textarea::placeholder {
   color: var(--color-muted);
+}
+
+.calendar-sheet {
+  padding: 16px 10px 14px;
+  background: var(--ui-calendar-surface);
+  color: var(--ui-calendar-text);
+  border: 1px solid color-mix(in srgb, var(--ui-calendar-accent) 30%, var(--ui-calendar-surface));
+  border-top: 3px solid var(--ui-calendar-accent);
+  border-radius: var(--ui-panel-radius);
+}
+
+.calendar-weekdays, .calendar-legend {
+  color: var(--ui-calendar-muted);
+}
+
+.calendar-details {
+  padding: 14px 12px;
+  background: var(--ui-calendar-surface);
+  color: var(--ui-calendar-text);
+  border-radius: var(--ui-panel-radius);
+}
+
+.calendar-details .rounded-xl {
+  border-radius: var(--ui-control-radius);
+}
+
+.calendar-arrow {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  color: var(--ui-calendar-accent);
+  border-radius: var(--ui-control-radius);
+}
+
+.calendar-day {
+  min-width: 0;
+  width: 100%;
+  min-height: 44px;
+  aspect-ratio: 1;
+  border: 1px solid transparent;
+  border-radius: var(--ui-control-radius);
+  transition: background-color 160ms ease, border-color 160ms ease;
+}
+
+.calendar-day[aria-current="date"] {
+  border-color: var(--ui-calendar-accent);
+  color: var(--ui-calendar-accent);
+}
+
+.calendar-day[aria-current="date"] > span:first-child {
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.calendar-day[aria-pressed="true"] {
+  background: var(--ui-calendar-selected);
+  color: var(--ui-on-accent);
+  border-color: var(--ui-calendar-accent);
+}
+
+.calendar-markers {
+  height: 6px;
+}
+
+.calendar-marker {
+  display: inline-block;
+  flex-shrink: 0;
+  width: 5px;
+  height: 5px;
+  background: currentColor;
+}
+
+.calendar-marker-task {
+  color: var(--ui-calendar-task);
+  border-radius: 50%;
+}
+
+.calendar-marker-class {
+  color: var(--ui-calendar-accent);
+}
+
+.calendar-marker-event {
+  color: var(--ui-calendar-event);
+  transform: rotate(45deg);
+}
+
+.calendar-day[aria-pressed="true"] .calendar-marker {
+  color: var(--ui-on-accent);
+}
+
+.calendar-legend {
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border);
+}
+
+.calendar-legend > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.calendar-sheet :focus-visible, .theme-nav :focus-visible {
+  outline: 2px solid var(--ui-calendar-accent);
+  outline-offset: 2px;
+}
+
+.theme-nav-icon {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 34px;
+  border: 1px solid transparent;
+  border-radius: var(--ui-control-radius);
+}
+
+.theme-nav-tab[aria-current="page"] .theme-nav-icon {
+  border-color: currentColor;
+  border-bottom-width: 3px;
+}
+
+.theme-nav-tab[aria-current="page"] > span:last-child {
+  font-weight: 700;
+}
+
+@media (hover: hover) {
+  .calendar-arrow:hover, .calendar-day:not([aria-pressed="true"]):hover {
+    outline: 1px solid var(--ui-calendar-accent);
+    outline-offset: -1px;
+  }
+
+  .theme-nav-tab:hover .theme-nav-icon {
+    border-color: currentColor;
+  }
 }

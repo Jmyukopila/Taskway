@@ -67,6 +67,23 @@ function setClasico(m) {
           rrect(16, 8.8, 3.6, 10.8, 1.1), m(17.8, 5.4, 2)
         ]
       }
+    },
+    academico: {
+      outline: [
+        poligono([[12, 3.8], [20.4, 8.4], [12, 13], [3.6, 8.4]]),
+        'M7.6 11.2L12 13.8 16.4 11.2',
+        'M12 8.4h6.2v7.4',
+        circulo(18.2, 16.9, 1.45),
+        m(12, 8.4, 1.9)
+      ],
+      solid: {
+        cut: poligono([[12, 3.8], [20.4, 8.4], [12, 13], [3.6, 8.4]]) + m(12, 8.4, 2),
+        extra: [
+          barraQuebrada([[7.6, 11.2], [12, 13.8], [16.4, 11.2]], 1.4),
+          barra(12, 8.4, 18.2, 8.4, 1.3), barra(18.2, 8.4, 18.2, 16, 1.3),
+          circulo(18.2, 16.9, 1.7)
+        ]
+      }
     }
   }
 }
@@ -123,6 +140,23 @@ function setFlora(m) {
           rrect(16, 8.8, 3.6, 10.8, 1.8), m(17.8, 5.4, 2)
         ]
       }
+    },
+    academico: {
+      outline: [
+        poligono([[12, 4.4], [19.8, 8.5], [12, 12.6], [4.2, 8.5]]),
+        'M8 11Q12 15.4 16 11',
+        'M12 8.5q6 0 6 3v4.2',
+        circulo(18, 16.6, 1.6),
+        m(12, 8.5, 1.8)
+      ],
+      solid: {
+        cut: poligono([[12, 4.4], [19.8, 8.5], [12, 12.6], [4.2, 8.5]]) + m(12, 8.5, 1.9),
+        extra: [
+          'M8 11Q12 15 16 11L16 11.9Q12 15.9 8 11.9z',
+          barra(12, 8.5, 18, 8.5, 1.3), barra(18, 8.5, 18, 16, 1.3),
+          circulo(18, 16.6, 1.85)
+        ]
+      }
     }
   }
 }
@@ -169,6 +203,23 @@ function setAcero(m) {
       solid: {
         cut: null,
         extra: [barraSesgada(4.4, 14.6, 3.6), barraSesgada(10.2, 11.8, 3.6), barraSesgada(16, 8.8, 3.6), m(17.8, 5.2, 2)]
+      }
+    },
+    academico: {
+      outline: [
+        poligono([[12, 3.2], [21, 8.4], [12, 13.6], [3, 8.4]]),
+        'M6.6 11.4L12 14.4 17.4 11.4',
+        'M12 8.4h6.8V16.2',
+        ngon(18.8, 17.2, 1.75, 6),
+        m(12, 8.4, 2.1)
+      ],
+      solid: {
+        cut: poligono([[12, 3.2], [21, 8.4], [12, 13.6], [3, 8.4]]) + m(12, 8.4, 2.2),
+        extra: [
+          barraQuebrada([[6.6, 11.4], [12, 14.4], [17.4, 11.4]], 1.6),
+          barra(12, 8.4, 18.8, 8.4, 1.5), barra(18.8, 8.4, 18.8, 16.4, 1.5),
+          ngon(18.8, 17.2, 1.95, 6)
+        ]
       }
     }
   }
@@ -256,6 +307,7 @@ export const ICONOS_FAMILIA = {
 /* ==================== CACHE ==================== */
 
 const cache = new Map()
+const cachePacks = new WeakMap()
 
 /**
  * Set de iconos activo. Con `pack` (paquete descargado) la geometria base sale
@@ -264,8 +316,9 @@ const cache = new Map()
  */
 export function getIconSet(familia, variante, pack = null) {
   const fam = CONSTRUCTORES[pack ? pack.base : familia] ? (pack ? pack.base : familia) : 'clasico'
-  const key = pack ? `pack:${pack.id}` : (variante ? `${fam}.${variante}` : fam)
-  const guardado = cache.get(key)
+  const cacheActiva = pack ? cachePacks : cache
+  const key = pack || (variante ? `${fam}.${variante}` : fam)
+  const guardado = cacheActiva.get(key)
   if (guardado) return guardado
 
   const motivo = pack ? motivoDesdeSpec(pack.motivo) : getMotivo(fam, variante)
@@ -274,6 +327,6 @@ export function getIconSet(familia, variante, pack = null) {
     utilidades: utilidades(fam, motivo),
     temas: temas(fam)
   }
-  cache.set(key, set)
+  cacheActiva.set(key, set)
   return set
 }

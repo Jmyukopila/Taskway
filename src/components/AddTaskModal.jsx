@@ -1,13 +1,17 @@
-import { useState } from 'react'
+import { useId, useRef, useState } from 'react'
 import { hoy, diasSemana } from '../lib/dates'
 import Modal from './ui/Modal'
 import { uid } from '../lib/id'
+import { normalizarCalificacion } from '../lib/academico'
 import { PlusIcon, RecurringIcon, CloseIcon } from '../config/icons'
 
 const DIAS = diasSemana()
 
-export default function AddTaskModal({ onClose, onAdd, task }) {
+export default function AddTaskModal({ onClose, onAdd, task, classes = [] }) {
   const esEdicion = !!task
+  const materiaId = useId()
+  const calificacionId = useId()
+  const calificacionTipId = useId()
   const [titulo, setTitulo] = useState(task?.titulo || '')
   const [descripcion, setDescripcion] = useState(task?.descripcion || '')
   const [fecha, setFecha] = useState(task?.fecha || hoy())
@@ -19,6 +23,40 @@ export default function AddTaskModal({ onClose, onAdd, task }) {
   const [recurDias, setRecurDias] = useState(task?.recurrencia?.diasSemana || [])
   const [subtaskInput, setSubtaskInput] = useState('')
   const [subtasks, setSubtasks] = useState(task?.subtasks || [])
+  const [claseId, setClaseId] = useState(task?.claseId ?? null)
+  const [materia, setMateria] = useState(task?.materia || '')
+  const [calificacionInput, setCalificacionInput] = useState(
+    task?.calificacion === null || task?.calificacion === undefined ? '' : String(task.calificacion).replace('.', ',')
+  )
+  const [calificacionError, setCalificacionError] = useState('')
+  const calificacionRef = useRef(null)
+
+  const materiaCounts = classes.reduce((acc, c) => { acc[c.materia] = (acc[c.materia] || 0) + 1; return acc }, Object.create(null))
+  const claseOpciones = classes.map(c => ({
+    id: c.id,
+    label: materiaCounts[c.materia] > 1
+      ? `${c.materia} (${c.profesor?.trim() ? c.profesor.trim() : `${c.horaInicio}-${c.horaFin}`})`
+      : c.materia
+  }))
+  if (task?.claseId && !classes.some(c => c.id === task.claseId)) {
+    claseOpciones.push({ id: task.claseId, label: `${task.materia || 'Materia'} (fuera del horario)` })
+  }
+
+  const handleClaseChange = (e) => {
+    const value = e.target.value
+    if (!value) {
+      setClaseId(null)
+      setMateria('')
+      return
+    }
+    setClaseId(value)
+    const clase = classes.find(c => c.id === value)
+    if (clase) {
+      setMateria(clase.materia)
+    } else if (task?.claseId === value) {
+      setMateria(task.materia || '')
+    }
+  }
 
   const toggleRecurDia = (dia) => {
     setRecurDias(prev => prev.includes(dia) ? prev.filter(d => d !== dia) : [...prev, dia])
@@ -38,6 +76,15 @@ export default function AddTaskModal({ onClose, onAdd, task }) {
     e.preventDefault()
     if (!titulo.trim()) return
 
+    let calificacion
+    try {
+      calificacion = normalizarCalificacion(calificacionInput)
+    } catch (err) {
+      setCalificacionError(err.message)
+      calificacionRef.current?.focus()
+      return
+    }
+
     const recurrencia = showRecurrencia ? {
       tipo: recurTipo,
       intervalo: 1,
@@ -51,7 +98,10 @@ export default function AddTaskModal({ onClose, onAdd, task }) {
       hora: showHora && hora ? hora : null,
       prioridad,
       subtasks,
-      recurrencia
+      recurrencia,
+      claseId,
+      materia: classes.find(c => c.id === claseId)?.materia || materia,
+      calificacion
     })
     onClose()
   }
@@ -96,6 +146,48 @@ export default function AddTaskModal({ onClose, onAdd, task }) {
               <option value="media">Media</option>
               <option value="alta">Alta</option>
             </select>
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          <div className="min-w-0">
+            <label htmlFor={materiaId} className="block text-xs font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>Materia</label>
+            <select id={materiaId} value={claseId ?? ''} onChange={handleClaseChange}
+              className="w-full rounded-lg px-3 py-2.5 text-sm"
+              style={{ backgroundColor: 'var(--color-fondo)', borderColor: 'var(--color-border)', color: 'var(--color-text)' }}
+            >
+              <option value="">Sin materia</option>
+              {claseOpciones.map(o => (
+                <option key={o.id} value={o.id}>{o.label}</option>
+              ))}
+            </select>
+            {classes.length === 0 && (
+              <p className="text-xs mt-1" style={{ color: 'var(--color-text-secondary)' }}>
+                Agrega tus materias en Horario para poder seleccionarlas.
+              </p>
+            )}
+          </div>
+          <div className="flex-1">
+            <label htmlFor={calificacionId} className="block text-xs font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>Nota (0-5)</label>
+            <input
+              id={calificacionId}
+              ref={calificacionRef}
+              type="text"
+              inputMode="decimal"
+              value={calificacionInput}
+              onChange={e => { setCalificacionInput(e.target.value); if (calificacionError) setCalificacionError('') }}
+              placeholder="Ej: 4,5"
+              aria-describedby={calificacionTipId}
+              aria-invalid={!!calificacionError}
+              className="w-full rounded-lg px-3 py-2.5 text-sm"
+              style={{ backgroundColor: 'var(--color-fondo)', borderColor: calificacionError ? 'var(--color-danger)' : 'var(--color-border)', color: 'var(--color-text)' }}
+            />
+            <p id={calificacionTipId} className="text-xs mt-1" style={{ color: 'var(--color-text-secondary)' }}>
+              Deja vacío si aún no recibes la nota.
+            </p>
+            {calificacionError && (
+              <p role="alert" className="text-xs mt-1" style={{ color: 'var(--color-danger)' }}>{calificacionError}</p>
+            )}
           </div>
         </div>
 

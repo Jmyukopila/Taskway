@@ -97,6 +97,10 @@ export function getMotivo(familia, variante) {
 export function motivoDesdeSpec(spec) {
   return (cx, cy, r) => spec.map(sub => sub.map(([letra, ...vals]) => {
     if (letra === 'Z') return 'z'
+    if (letra === 'A') {
+      const [rx, ry, rot, largeArc, sweep, x, y] = vals
+      return `A${n(rx * r)} ${n(ry * r)} ${n(rot)} ${largeArc} ${sweep} ${n(cx + x * r)} ${n(cy + y * r)}`
+    }
     const puntos = []
     for (let i = 0; i < vals.length; i += 2) {
       puntos.push(`${n(cx + vals[i] * r)} ${n(cy + vals[i + 1] * r)}`)

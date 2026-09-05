@@ -3,6 +3,7 @@ import { STORAGE_KEYS } from '../config/constants'
 import { loadJSON, saveJSON } from '../lib/storage'
 import { uid } from '../lib/id'
 import { generarProximaFechaRecurrente, hoy } from '../lib/dates'
+import { getDatosAcademicos, normalizarCalificacion } from '../lib/academico'
 import { permisoConcedido, enviarNotificacion, enviarNotificacionDesdeSW, suscribirPush, playAlarm } from '../utils/pushNotifications'
 
 const PENDING_KEY = 'taskway-pending-notifs'
@@ -129,6 +130,7 @@ export default function useTasks() {
       prioridad: data.prioridad || 'media',
       subtasks: data.subtasks || [],
       recurrencia: data.recurrencia || null,
+      ...getDatosAcademicos(data),
       createdAt: hoy()
     }
     setTasks(prev => [...prev, nueva])
@@ -158,6 +160,7 @@ export default function useTasks() {
               prioridad: t.prioridad,
               subtasks: (t.subtasks || []).map(s => ({ ...s, completada: false })),
               recurrencia: t.recurrencia,
+              ...getDatosAcademicos(t, true),
               createdAt: hoy()
             }
             return [updated, instancia]
@@ -173,7 +176,11 @@ export default function useTasks() {
   }, [])
 
   const updateTask = useCallback((id, cambios) => {
-    setTasks(prev => prev.map(t => t.id === id ? { ...t, ...cambios } : t))
+    const actualizacion = { ...cambios }
+    if (Object.hasOwn(actualizacion, 'calificacion')) {
+      actualizacion.calificacion = normalizarCalificacion(actualizacion.calificacion)
+    }
+    setTasks(prev => prev.map(t => t.id === id ? { ...t, ...actualizacion } : t))
   }, [])
 
   const toggleSubtask = useCallback((taskId, subtaskId) => {

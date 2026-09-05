@@ -7,6 +7,7 @@ export const STORAGE_KEYS = {
   EVENTS: 'mi-dia-events',
   ALARM_ENABLED: 'mi-dia-alarm-enabled',
   PACKS: 'mi-dia-packs',
+  NOTAS: 'mi-dia-notas',
   VERSION_VISTA: 'mi-dia-version-vista'
 }
 

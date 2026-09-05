@@ -14,6 +14,20 @@
 
 export const CAMBIOS = [
   {
+    version: '1.2.0',
+    fecha: '2026-09-05',
+    titulo: 'Sección académica: materias, tareas y notas',
+    cambios: [
+      { tipo: 'nuevo', texto: 'Sección Académico (donde antes estaba Resumen): reúne tus tareas por materia, tus notas y el resumen de siempre, cada uno en su pestaña.' },
+      { tipo: 'nuevo', texto: 'Notas por materia: define tus cortes con su peso (30/30/40 o el que uses), anota cada parcial, quiz o taller y la app calcula la nota de cada corte y la definitiva proyectada.' },
+      { tipo: 'nuevo', texto: 'Cada tarea puede llevar su materia y su nota de 0 a 5. Las notas de las tareas se listan aparte y no se mezclan con el cálculo de los cortes.' },
+      { tipo: 'nuevo', texto: 'Paquete de temas Warrior: fantasía oscura de eclipse carmesí, mandoble y tinta sobre acero.' },
+      { tipo: 'mejorado', texto: 'Calendario nuevo: la hoja del mes toma el color del tema, los días marcan tareas, clases y eventos con leyenda, y puedes editar una tarea desde el día seleccionado.' },
+      { tipo: 'mejorado', texto: 'El calendario, la barra inferior y los iconos siguen el color y la forma del tema o paquete activo, siempre con contraste legible en claro y oscuro.' },
+      { tipo: 'mejorado', texto: 'Las tareas completadas se muestran tachadas y con sus mismas acciones, en vez de atenuadas y sin botones.' }
+    ]
+  },
+  {
     version: '1.1.0',
     fecha: '2026-08-19',
     titulo: 'Paquetes de temas',

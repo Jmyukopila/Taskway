@@ -144,3 +144,71 @@ export const TEMAS = {
     }
   }
 }
+
+function rgb(hex) {
+  const value = hex.slice(1)
+  const full = value.length === 3 ? [...value].map(c => c + c).join('') : value
+  return [0, 2, 4].map(i => parseInt(full.slice(i, i + 2), 16))
+}
+
+function mezclar(a, b, peso) {
+  return a.map((v, i) => Math.round(v * peso + b[i] * (1 - peso)))
+}
+
+function opaco(hex, fondo) {
+  const alfa = hex.length === 9 ? parseInt(hex.slice(7), 16) / 255 : 1
+  return mezclar(rgb(hex), fondo, alfa)
+}
+
+function hexadecimal(color) {
+  return '#' + color.map(v => v.toString(16).padStart(2, '0')).join('')
+}
+
+function luminancia(color) {
+  return color.map(v => {
+    const c = v / 255
+    return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4
+  }).reduce((total, c, i) => total + c * [0.2126, 0.7152, 0.0722][i], 0)
+}
+
+function contraste(a, b) {
+  const [claro, oscuro] = [luminancia(a), luminancia(b)].sort((x, y) => y - x)
+  return (claro + 0.05) / (oscuro + 0.05)
+}
+
+function tinta(fondo) {
+  return contraste([255, 255, 255], fondo) > contraste([0, 0, 0], fondo)
+    ? [255, 255, 255] : [0, 0, 0]
+}
+
+function legible(color, fondo) {
+  const destino = tinta(fondo)
+  for (let paso = 0; paso <= 100; paso++) {
+    const candidato = mezclar(color, destino, 1 - paso / 100)
+    if (contraste(candidato, fondo) >= 4.5) return candidato
+  }
+  return destino
+}
+
+export function getVisualTokens(paleta, familia) {
+  const fondo = opaco(paleta.fondo, [255, 255, 255])
+  const superficie = opaco(paleta.card, fondo)
+  const acento = opaco(paleta.teal, superficie)
+  const readable = key => hexadecimal(legible(opaco(paleta[key], superficie), superficie))
+  const evento = legible(opaco(paleta.warning, superficie), superficie)
+  return {
+    'calendar-surface': hexadecimal(superficie),
+    'calendar-selected': hexadecimal(acento),
+    'calendar-text': readable('text'),
+    'calendar-muted': readable('text-secondary'),
+    'calendar-accent': readable('teal'),
+    'calendar-task': readable('purple'),
+    'calendar-event': hexadecimal(evento),
+    'on-accent': hexadecimal(tinta(acento)),
+    'on-event': hexadecimal(tinta(evento)),
+    icon: readable('teal'),
+    'icon-muted': readable('text-secondary'),
+    'control-radius': familia === 'acero' ? '3px' : familia === 'flora' ? '18px' : '10px',
+    'panel-radius': familia === 'acero' ? '6px' : familia === 'flora' ? '26px' : '16px'
+  }
+}
